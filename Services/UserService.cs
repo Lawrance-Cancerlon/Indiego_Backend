@@ -17,8 +17,12 @@ public interface IUserService
         where TResponse : UserContract
         where TEntity : User
         where TCreate : CreateUserContract;
-    Task<DeveloperContract?> ConvertToCustomerToDeveloper(string id, CreateDeveloperContract contract);
-    Task<TResponse> Delete<TResponse>(string id) where TResponse : UserContract;
+    Task<DeveloperContract?> ConvertCustomerToDeveloper(string id, CreateDeveloperContract contract);
+    Task<TResponse?> Update<TResponse, TEntity, TUpdate>(string id, TUpdate update)
+        where TResponse : UserContract
+        where TEntity : User
+        where TUpdate : UpdateUserContract;
+    Task<TResponse?> Delete<TResponse>(string id) where TResponse : UserContract;
 }
 
 public class UserService(IUserRepository<User> userRepository, IUserRepository<Admin> adminRepository, IUserRepository<Customer> customerRepository, IUserRepository<Developer> developerRepository, IMapper mapper, AuthService auth) : IUserService
@@ -91,7 +95,7 @@ public class UserService(IUserRepository<User> userRepository, IUserRepository<A
         return _mapper.Map<TResponse>(entity);
     }
 
-    public async Task<DeveloperContract?> ConvertToCustomerToDeveloper(string id, CreateDeveloperContract contract)
+    public async Task<DeveloperContract?> ConvertCustomerToDeveloper(string id, CreateDeveloperContract contract)
     {
         var customer = (await _customer.Get(id, null)).FirstOrDefault();
         if (customer == null)
@@ -112,9 +116,30 @@ public class UserService(IUserRepository<User> userRepository, IUserRepository<A
         return _mapper.Map<DeveloperContract>(developer);
     }
 
-    public async Task<TResponse> Delete<TResponse>(string id) where TResponse : UserContract
+    public async Task<TResponse?> Update<TResponse, TEntity, TUpdate>(string id, TUpdate update)
+        where TResponse : UserContract
+        where TEntity : User
+        where TUpdate : UpdateUserContract
+    {
+        IUserRepository<TEntity> repository;
+        if (typeof(TEntity) == typeof(Admin))
+            repository = (IUserRepository<TEntity>)_admin;
+        else if (typeof(TEntity) == typeof(Customer))
+            repository = (IUserRepository<TEntity>)_customer;
+        else if (typeof(TEntity) == typeof(Developer))
+            repository = (IUserRepository<TEntity>)_developer;
+        else
+            repository = (IUserRepository<TEntity>)_user;
+        var entity = (await repository.Get(id))[0];
+        if (entity == null) return null;
+        entity = await repository.Update(id, _mapper.Map<TUpdate, TEntity>(update, entity));
+        return _mapper.Map<TResponse>(entity);
+    }
+
+    public async Task<TResponse?> Delete<TResponse>(string id) where TResponse : UserContract
     {
         var entity = await _user.Delete(id);
+        if (entity == null) return null;
         return _mapper.Map<TResponse>(entity);
     }
 }

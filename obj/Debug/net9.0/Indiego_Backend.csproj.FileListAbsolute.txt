@@ -48,3 +48,4 @@ D:\Coding Environment\Indiego_Backend\obj\Debug\net9.0\refint\Indiego_Backend.dl
 D:\Coding Environment\Indiego_Backend\obj\Debug\net9.0\Indiego_Backend.pdb
 D:\Coding Environment\Indiego_Backend\obj\Debug\net9.0\Indiego_Backend.genruntimeconfig.cache
 D:\Coding Environment\Indiego_Backend\obj\Debug\net9.0\ref\Indiego_Backend.dll
+D:\Coding Environment\Indiego_Backend\obj\Debug\net9.0\Indiego_Backend.sourcelink.json

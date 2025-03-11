@@ -7,7 +7,7 @@ namespace Indiego_Backend.Repositories;
 
 public interface IUserRepository<T> where T : User
 {
-    Task<List<T>> Get(string? id, string? email);
+    Task<List<T>> Get(string? id = null, string? email = null);
     Task<T?> Create(T entity);
     Task<T?> Update(string id, T entity);
     Task<T?> Delete(string id);
@@ -17,10 +17,11 @@ public class UserRepository<T>(DatabaseSetting setting) : IUserRepository<T> whe
 {
     private readonly IMongoCollection<T> _collection = new MongoClient(setting.ConnectionString).GetDatabase(setting.DatabaseName).GetCollection<T>("users");
 
-    public async Task<List<T>> Get(string? id, string? email)
+    public async Task<List<T>> Get(string? id = null, string? email = null)
     {
         var filterBuilder = Builders<T>.Filter;
         var filter = filterBuilder.Empty;
+        filter &= filterBuilder.Eq("_t", typeof(T).Name);
         if (id != null) filter &= filterBuilder.Eq(p => p.Id, id);
         if (email!= null) filter &= filterBuilder.Eq(p => p.Email, email);
         return await _collection.Find(filter).ToListAsync();

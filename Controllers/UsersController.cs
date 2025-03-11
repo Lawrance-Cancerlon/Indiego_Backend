@@ -48,6 +48,17 @@ namespace Indiego_Backend.Controllers
             return Ok(entity);
         }
 
+        [HttpPost("developer")]
+        [Authorize("Customer")]
+        public async Task<IActionResult> CreateDeveloper([FromHeader(Name = "Authorization")] string token, [FromBody] CreateDeveloperContract create)
+        {
+            var entity = await _user.GetLoggedInUser(token);
+            if (entity == null) return Unauthorized();
+            var validationResult = await _developerValidator.ValidateAsync(create);
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+            return Ok(await _user.ConvertCustomerToDeveloper(entity.Id, create));
+        }
+
         [HttpPost("admin")]
         [Authorize("AdminWithManageAdmins")]
         public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminContract create)
@@ -59,15 +70,31 @@ namespace Indiego_Backend.Controllers
             return Ok(entity);
         }
 
-        [HttpPost("developer")]
+        [HttpPut("{id}")]
         [Authorize("Customer")]
-        public async Task<IActionResult> CreateDeveloper([FromHeader(Name = "Authorization")] string token, [FromBody] CreateDeveloperContract create)
+        public async Task<IActionResult> Update([FromBody] UpdateCustomerContract update, string id)
         {
-            var entity = await _user.GetLoggedInUser(token);
-            if (entity == null) return Unauthorized();
-            var validationResult = await _developerValidator.ValidateAsync(create);
-            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
-            return Ok(await _user.ConvertToCustomerToDeveloper(entity.Id, create));
+            var entity = await _user.Update<CustomerContract, Customer, UpdateCustomerContract>(id, update);
+            if (entity == null) return NotFound();
+            return Ok(entity);
+        }
+
+        [HttpPut("developer/{id}")]
+        [Authorize("Developer")]
+        public async Task<IActionResult> UpdateDeveloper([FromBody] UpdateDeveloperContract update, string id)
+        {
+            var entity = await _user.Update<DeveloperContract, Developer, UpdateDeveloperContract>(id, update);
+            if (entity == null) return NotFound();
+            return Ok(entity);
+        }
+
+        [HttpPut("admin/{id}")]
+        [Authorize("AdminWithManageAdmins")]
+        public async Task<IActionResult> UpdateAdmin([FromBody] UpdateAdminContract update, string id)
+        {
+            var entity = await _user.Update<AdminContract, Admin, UpdateAdminContract>(id, update);
+            if (entity == null) return NotFound();
+            return Ok(entity);
         }
 
         [HttpDelete]
@@ -79,9 +106,9 @@ namespace Indiego_Backend.Controllers
             return Ok(await _user.Delete<UserContract>(entity.Id));
         }
 
-        [HttpDelete("admin")]
+        [HttpDelete("admin/{id}")]
         [Authorize("AdminWithManageAdmins")]
-        public async Task<IActionResult> DeleteAdmin([FromQuery] string id)
+        public async Task<IActionResult> DeleteAdmin(string id)
         {
             var entity = await _user.Delete<AdminContract>(id);
             if (entity == null) return NotFound();

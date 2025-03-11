@@ -4,30 +4,30 @@ namespace Indiego_Backend.Contracts.Users;
 
 public record class DeveloperContract : CustomerContract
 {
-    [JsonPropertyName("Bank")]
+    [JsonPropertyName("bank")]
     public string Bank { get; set; } = null!;
-    [JsonPropertyName("AccountNumber")]
+    [JsonPropertyName("accountNumber")]
     public string AccountNumber { get; set; } = null!;
-    [JsonPropertyName("AccountName")]
+    [JsonPropertyName("accountName")]
     public string AccountName { get; set; } = null!;
 }
 
 public record CreateDeveloperContract
 {
-    [JsonPropertyName("Bank")]
+    [JsonPropertyName("bank")]
     public string Bank { get; set; } = null!;
-    [JsonPropertyName("AccountNumber")]
+    [JsonPropertyName("accountNumber")]
     public string AccountNumber { get; set; } = null!;
-    [JsonPropertyName("AccountName")]
+    [JsonPropertyName("accountName")]
     public string AccountName { get; set; } = null!;
 }
 
 public record UpdateDeveloperContract : UpdateCustomerContract
 {
-    [JsonPropertyName("Bank")]
+    [JsonPropertyName("bank")]
     public string? Bank { get; set; }
-    [JsonPropertyName("AccountNumber")]
+    [JsonPropertyName("accountNumber")]
     public string? AccountNumber { get; set; }
-    [JsonPropertyName("AccountName")]
+    [JsonPropertyName("accountName")]
     public string? AccountName { get; set; }
 }
