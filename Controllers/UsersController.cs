@@ -60,7 +60,7 @@ namespace Indiego_Backend.Controllers
         }
 
         [HttpPost("admin")]
-        [Authorize("AdminWithManageAdmins")]
+        // [Authorize("AdminWithManageAdmins")]
         public async Task<IActionResult> CreateAdmin([FromBody] CreateAdminContract create)
         {
             var validationResult = await _adminValidator.ValidateAsync(create);

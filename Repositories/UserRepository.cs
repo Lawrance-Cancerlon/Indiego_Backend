@@ -21,7 +21,7 @@ public class UserRepository<T>(DatabaseSetting setting) : IUserRepository<T> whe
     {
         var filterBuilder = Builders<T>.Filter;
         var filter = filterBuilder.Empty;
-        filter &= filterBuilder.Eq("_t", typeof(T).Name);
+        filter &= filterBuilder.AnyEq("_t", typeof(T).Name);
         if (id != null) filter &= filterBuilder.Eq(p => p.Id, id);
         if (email!= null) filter &= filterBuilder.Eq(p => p.Email, email);
         return await _collection.Find(filter).ToListAsync();

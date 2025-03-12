@@ -4,8 +4,9 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Indiego_Backend.Models.Users;
 
-[BsonDiscriminator(Required = true)]
-[BsonKnownTypes]
+// [BsonIgnoreExtraElements]
+[BsonDiscriminator(RootClass = true)]
+[BsonKnownTypes(typeof(Admin), typeof(Customer), typeof(Developer))]
 public abstract class User
 {
     [BsonId]
