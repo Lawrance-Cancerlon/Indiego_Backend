@@ -4,6 +4,8 @@ namespace Indiego_Backend.Contracts.Users;
 
 public record class DeveloperContract : CustomerContract
 {
+    [JsonPropertyName("balance")]
+    public decimal Balance { get; set; } = 0;
     [JsonPropertyName("bank")]
     public string Bank { get; set; } = null!;
     [JsonPropertyName("accountNumber")]

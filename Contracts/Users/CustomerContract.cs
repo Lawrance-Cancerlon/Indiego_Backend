@@ -8,6 +8,8 @@ public record class CustomerContract : UserContract
     public DateTime BirthDate { get; set; }
     [JsonPropertyName("hasSubscription")]
     public bool HasSubscription { get; set; }
+    [JsonPropertyName("favorites")]
+    public List<string> Favorites { get; set; } = null!;
 }
 
 public record class CreateCustomerContract : CreateUserContract

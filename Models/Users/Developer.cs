@@ -5,6 +5,8 @@ namespace Indiego_Backend.Models.Users;
 
 public class Developer : Customer
 {
+    [BsonElement("Balance")]
+    public decimal Balance { get; set; } = 0;
     [BsonElement("Bank")]
     public string Bank { get; set; } = null!;
     [BsonElement("AccountNumber")]
