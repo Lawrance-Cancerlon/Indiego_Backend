@@ -18,3 +18,11 @@ public class CreateAdminValidation : AbstractValidator<CreateAdminContract>
         RuleFor(p => p.CanManageTransactions).NotNull().WithMessage("CanManageTransactions is required");
     }
 }
+
+public class UpdateAdminValidation : AbstractValidator<UpdateAdminContract>
+{
+    public UpdateAdminValidation()
+    {
+        Include(new UpdateUserValidation());
+    }
+}

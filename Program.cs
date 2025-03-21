@@ -22,6 +22,7 @@ builder.Services.AddSingleton(serviceProvider => serviceProvider.GetRequiredServ
 
 //AutoMapper
 builder.Services.AddAutoMapper(typeof(UserMapping));
+builder.Services.AddAutoMapper(typeof(GameMapping));
 
 //Repositories
 builder.Services.AddScoped<IUserRepository<User>, UserRepository<User>>();
@@ -34,6 +35,11 @@ builder.Services.AddSingleton<IValidator<CreateUserContract>, CreateUserValidati
 builder.Services.AddSingleton<IValidator<CreateAdminContract>, CreateAdminValidation>();
 builder.Services.AddSingleton<IValidator<CreateCustomerContract>, CreateCustomerValidation>();
 builder.Services.AddSingleton<IValidator<CreateDeveloperContract>, CreateDeveloperValidation>();
+
+builder.Services.AddSingleton<IValidator<UpdateUserContract>, UpdateUserValidation>();
+builder.Services.AddSingleton<IValidator<UpdateAdminContract>, UpdateAdminValidation>();
+builder.Services.AddSingleton<IValidator<UpdateCustomerContract>, UpdateCustomerValidation>();
+builder.Services.AddSingleton<IValidator<UpdateDeveloperContract>, UpdateDeveloperValidation>();
 
 //Services
 builder.Services.AddScoped<IUserService, UserService>();

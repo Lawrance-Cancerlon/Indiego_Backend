@@ -14,3 +14,12 @@ public class CreateDeveloperValidation : AbstractValidator<CreateDeveloperContra
         RuleFor(p => p.AccountName).NotEmpty().WithMessage("AccountName is required");
     }
 }
+
+public class UpdateDeveloperValidation : AbstractValidator<UpdateDeveloperContract>
+{
+    public UpdateDeveloperValidation()
+    {
+        Include(new UpdateCustomerValidation());
+        RuleFor(p => p.AccountNumber).Matches(@"^\d*$").WithMessage("AccountNumber must be numeric");
+    }
+}

@@ -13,3 +13,12 @@ public class CreateUserValidation : AbstractValidator<CreateUserContract>
         RuleFor(p => p.Password).NotEmpty().MinimumLength(8).WithMessage("Password must be at least 8 characters long");
     }
 }
+
+public class UpdateUserValidation : AbstractValidator<UpdateUserContract>
+{
+    public UpdateUserValidation()
+    {
+        RuleFor(p => p.Email).EmailAddress().WithMessage("Valid email is required");
+        RuleFor(p => p.Password).MinimumLength(8).WithMessage("Password must be at least 8 characters long");
+    }
+}

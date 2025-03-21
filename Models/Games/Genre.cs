@@ -2,7 +2,7 @@ using System;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace Indiego_Backend.Models;
+namespace Indiego_Backend.Models.Games;
 
 public class Genre
 {
