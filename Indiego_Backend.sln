@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Indiego_Backend", "Indiego_Backend.csproj", "{79E93D16-FE06-3FC1-06B5-ACD2CDABCCD3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{79E93D16-FE06-3FC1-06B5-ACD2CDABCCD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79E93D16-FE06-3FC1-06B5-ACD2CDABCCD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79E93D16-FE06-3FC1-06B5-ACD2CDABCCD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79E93D16-FE06-3FC1-06B5-ACD2CDABCCD3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D8D1E56A-375C-4FA0-9948-C35040E38515}
+	EndGlobalSection
+EndGlobal
