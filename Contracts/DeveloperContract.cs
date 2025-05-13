@@ -18,6 +18,4 @@ public record class UpdateDeveloperContract : UpdateCustomerContract
     public List<string>? GameIds { get; init; } = null;
     [JsonPropertyName("postIds")]
     public List<string>? PostIds { get; init; } = null;
-    [JsonPropertyName("balance")]
-    public decimal? Balance { get; init; } = null;
 }

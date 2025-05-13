@@ -101,22 +101,30 @@ public class UsersController(
         return Ok(await _userService.Create<AdminContract, Admin, CreateAdminContract>(createAdminContract));
     }
 
-    [HttpPut("{id}")]
+    [HttpPut]
     [Authorize("Customer")]
-    public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateCustomerContract updateCustomerContract)
+    public async Task<IActionResult> Update([FromHeader(Name = "Authorization")] string token, [FromBody] UpdateCustomerContract updateCustomerContract)
     {
         var validationResult = await _updateCustomerValidator.ValidateAsync(updateCustomerContract);
         if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
-        return Ok(await _userService.Update<CustomerContract, Customer, UpdateCustomerContract>(id, updateCustomerContract));
+        var tokenArr = token.Split(" ");
+        if(tokenArr[1] == null) return BadRequest();
+        var userId = _authenticationService.GetId(tokenArr[1]);
+        if(userId == null) return BadRequest();
+        return Ok(await _userService.Update<CustomerContract, Customer, UpdateCustomerContract>(userId, updateCustomerContract));
     }
 
-    [HttpPut("developer/{id}")]
+    [HttpPut("developer")]
     [Authorize("Developer")]
-    public async Task<IActionResult> UpdateDeveloper([FromRoute] string id, [FromBody] UpdateDeveloperContract updateDeveloperContract)
+    public async Task<IActionResult> UpdateDeveloper([FromHeader(Name = "Authorization")] string token, [FromBody] UpdateDeveloperContract updateDeveloperContract)
     {
         var validationResult = await _updateDeveloperValidator.ValidateAsync(updateDeveloperContract);
         if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
-        return Ok(await _userService.Update<DeveloperContract, Developer, UpdateDeveloperContract>(id, updateDeveloperContract));
+        var tokenArr = token.Split(" ");
+        if(tokenArr[1] == null) return BadRequest();
+        var userId = _authenticationService.GetId(tokenArr[1]);
+        if(userId == null) return BadRequest();
+        return Ok(await _userService.Update<DeveloperContract, Developer, UpdateDeveloperContract>(userId, updateDeveloperContract));
     }
 
     [HttpPut("admin/{id}")]
@@ -134,15 +142,17 @@ public class UsersController(
     {
         var tokenArr = token.Split(" ");
         if(tokenArr[1] == null) return BadRequest();
+        var userId = _authenticationService.GetId(tokenArr[1]);
+        if(userId == null) return BadRequest();
         var role = _authenticationService.GetRole(tokenArr[1]);
         if (role == "Admin") 
-            return Ok(await _userService.Delete<AdminContract, Admin>(tokenArr[1]));
+            return Ok(await _userService.Delete<AdminContract, Admin>(userId));
         else if (role == "Developer")
-            return Ok(await _userService.Delete<DeveloperContract, Developer>(tokenArr[1]));
+            return Ok(await _userService.Delete<DeveloperContract, Developer>(userId));
         else if (role == "Customer")
-            return Ok(await _userService.Delete<CustomerContract, Customer>(tokenArr[1]));
+            return Ok(await _userService.Delete<CustomerContract, Customer>(userId));
         else
-            return Ok(await _userService.Delete<UserContract, User>(tokenArr[1]));
+            return Ok(await _userService.Delete<UserContract, User>(userId));
     }
 
     [HttpDelete("admin/{id}")]

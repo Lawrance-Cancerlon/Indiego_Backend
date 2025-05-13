@@ -137,7 +137,7 @@ public class UserService(
             repository = (IUserRepository<TEntity>)_userRepository;
         var user = (await repository.Get(id))[0];
         if (user == null) return null;
-        user = await repository.Update(id, _mapper.Map<TUpdate, TEntity>(update, user));
+        user = await repository.Update(id, _mapper.Map(update, user));
         return _mapper.Map<TResponse>(user);
     }
 
