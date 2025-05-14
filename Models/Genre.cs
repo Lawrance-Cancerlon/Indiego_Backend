@@ -12,5 +12,5 @@ public class Genre
     [BsonElement("Name")]
     public string Name { get; set; } = null!;
     [BsonElement("GameIds")]
-    public List<string> GameIds { get; set; } = null!;
+    public List<string> GameIds { get; set; } = [];
 }

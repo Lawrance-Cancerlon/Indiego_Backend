@@ -17,6 +17,4 @@ public class Post
     public string Text { get; set; } = null!;
     [BsonElement("Likes")]
     public List<string> Likes { get; set; } = [];
-    [BsonElement("Dislikes")]
-    public List<string> Dislikes { get; set; } = [];
 }

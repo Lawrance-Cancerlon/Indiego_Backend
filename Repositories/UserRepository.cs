@@ -1,8 +1,6 @@
 using System;
 using Indiego_Backend.Models;
 using Indiego_Backend.Services;
-using Indiego_Backend.Settings;
-using Microsoft.Testing.Platform.Extensions.Messages;
 using MongoDB.Driver;
 
 namespace Indiego_Backend.Repositories;

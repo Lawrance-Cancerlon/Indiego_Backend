@@ -11,8 +11,6 @@ public class Customer : User
     public List<string> ReviewIds { get; set; } = [];
     [BsonElement("Likes")]
     public List<string> Likes { get; set; } = [];
-    [BsonElement("Dislikes")]
-    public List<string> Dislikes { get; set; } = [];
     [BsonElement("Favorites")]
     public List<string> Favorites { get; set; } = [];
     [BsonElement("Downloads")]

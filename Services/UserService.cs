@@ -175,7 +175,6 @@ public class UserService(
             SubscriptionId = customer.SubscriptionId,
             ReviewIds = customer.ReviewIds,
             Likes = customer.Likes,
-            Dislikes = customer.Dislikes,
             Favorites = customer.Favorites,
             Downloads = customer.Downloads,
             BirthDate = customer.BirthDate,

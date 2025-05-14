@@ -54,6 +54,7 @@ builder.Services.AddAuthorizationBuilder()
 
 //AutoMappers
 builder.Services.AddAutoMapper(typeof(UserMapper));
+builder.Services.AddAutoMapper(typeof(GenreMapper));
 
 //Validators
 builder.Services.AddSingleton<IValidator<CreateUserContract>, CreateUserValidator>();
@@ -63,15 +64,18 @@ builder.Services.AddSingleton<IValidator<UpdateAdminContract>, UpdateAdminValida
 builder.Services.AddSingleton<IValidator<CreateCustomerContract>, CreateCustomerValidator>();
 builder.Services.AddSingleton<IValidator<UpdateCustomerContract>, UpdateCustomerValidator>();
 builder.Services.AddSingleton<IValidator<UpdateDeveloperContract>, UpdateDeveloperValidator>();
+builder.Services.AddSingleton<IValidator<CreateGenreContract>, CreateGenreValidator>();
 
 //Repositories
 builder.Services.AddSingleton<IUserRepository<User>, UserRepository<User>>();
 builder.Services.AddSingleton<IUserRepository<Admin>, UserRepository<Admin>>();
 builder.Services.AddSingleton<IUserRepository<Customer>, UserRepository<Customer>>();
 builder.Services.AddSingleton<IUserRepository<Developer>, UserRepository<Developer>>();
+builder.Services.AddSingleton<IGenreRepository, GenreRepository>();
 
 //Services
 builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddSingleton<IGenreService, GenreService>();
 
 builder.Services.AddControllers();
 

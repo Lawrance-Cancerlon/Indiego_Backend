@@ -10,8 +10,6 @@ public record class CustomerContract : UserContract
     public List<string> ReviewIds { get; init; } = null!;
     [JsonPropertyName("likes")]
     public List<string> Likes { get; init; } = null!;
-    [JsonPropertyName("dislikes")]
-    public List<string> Dislikes { get; init; } = null!;
     [JsonPropertyName("favorites")]
     public List<string> Favorites { get; init; } = null!;
     [JsonPropertyName("downloads")]

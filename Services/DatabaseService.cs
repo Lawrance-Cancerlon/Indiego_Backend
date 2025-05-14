@@ -11,6 +11,7 @@ public interface IDatabaseService
     IMongoCollection<Customer> Customers { get; }
     IMongoCollection<Developer> Developers { get; }
     IMongoCollection<Admin> Admins { get; }
+    IMongoCollection<Genre> Genres { get; }
 }
 
 public class DatabaseService(DatabaseSetting database) : IDatabaseService
@@ -21,4 +22,5 @@ public class DatabaseService(DatabaseSetting database) : IDatabaseService
     public IMongoCollection<Customer> Customers => _database.GetCollection<Customer>("users");
     public IMongoCollection<Developer> Developers => _database.GetCollection<Developer>("users");
     public IMongoCollection<Admin> Admins => _database.GetCollection<Admin>("users");
+    public IMongoCollection<Genre> Genres => _database.GetCollection<Genre>("genres");
 }
