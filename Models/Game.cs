@@ -21,6 +21,4 @@ public class Game
     public string Description { get; set; } = null!;
     [BsonElement("GenreIds")]
     public List<string> GenreIds { get; set; } = null!;
-    [BsonElement("Path")]
-    public string Path { get; set; } = null!;
 }

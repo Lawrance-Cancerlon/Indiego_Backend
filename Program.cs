@@ -55,6 +55,7 @@ builder.Services.AddAuthorizationBuilder()
 //AutoMappers
 builder.Services.AddAutoMapper(typeof(UserMapper));
 builder.Services.AddAutoMapper(typeof(GenreMapper));
+builder.Services.AddAutoMapper(typeof(GameMapper));
 
 //Validators
 builder.Services.AddSingleton<IValidator<CreateUserContract>, CreateUserValidator>();
@@ -65,6 +66,8 @@ builder.Services.AddSingleton<IValidator<CreateCustomerContract>, CreateCustomer
 builder.Services.AddSingleton<IValidator<UpdateCustomerContract>, UpdateCustomerValidator>();
 builder.Services.AddSingleton<IValidator<UpdateDeveloperContract>, UpdateDeveloperValidator>();
 builder.Services.AddSingleton<IValidator<CreateGenreContract>, CreateGenreValidator>();
+builder.Services.AddSingleton<IValidator<CreateGameContract>, CreateGameValidator>();
+builder.Services.AddSingleton<IValidator<UpdateGameContract>, UpdateGameValidator>();
 
 //Repositories
 builder.Services.AddSingleton<IUserRepository<User>, UserRepository<User>>();
@@ -72,10 +75,12 @@ builder.Services.AddSingleton<IUserRepository<Admin>, UserRepository<Admin>>();
 builder.Services.AddSingleton<IUserRepository<Customer>, UserRepository<Customer>>();
 builder.Services.AddSingleton<IUserRepository<Developer>, UserRepository<Developer>>();
 builder.Services.AddSingleton<IGenreRepository, GenreRepository>();
+builder.Services.AddSingleton<IGameRepository, GameRepository>();
 
 //Services
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<IGenreService, GenreService>();
+builder.Services.AddSingleton<IGameService, GameService>();
 
 builder.Services.AddControllers();
 
@@ -110,6 +115,14 @@ builder.Services.AddSwaggerGen(c =>
     }
 );
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod());
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -118,6 +131,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
