@@ -37,7 +37,7 @@ public class UsersController(
     public async Task<IActionResult> GetMe([FromHeader(Name = "Authorization")] string token)
     {
         var tokenArr = token.Split(" ");
-        if(tokenArr[1] == null) return BadRequest();
+        if(tokenArr.Length != 2) return BadRequest();
         var role = _authenticationService.GetRole(tokenArr[1]);
         if (role == "Admin") 
             return Ok(await _userService.GetLoggedInUser<AdminContract, Admin>(tokenArr[1]));
@@ -88,7 +88,7 @@ public class UsersController(
     public async Task<IActionResult> CreateDeveloper([FromHeader(Name = "Authorization")] string token)
     {
         var tokenArr = token.Split(" ");
-        if(tokenArr[1] == null) return BadRequest();
+        if(tokenArr.Length != 2) return BadRequest();
         return Ok(await _userService.ConvertCustomerToDeveloper(tokenArr[1]));
     }
 
@@ -108,7 +108,7 @@ public class UsersController(
         var validationResult = await _updateCustomerValidator.ValidateAsync(updateCustomerContract);
         if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
         var tokenArr = token.Split(" ");
-        if(tokenArr[1] == null) return BadRequest();
+        if(tokenArr.Length != 2) return BadRequest();
         var userId = _authenticationService.GetId(tokenArr[1]);
         if(userId == null) return BadRequest();
         return Ok(await _userService.Update<CustomerContract, Customer, UpdateCustomerContract>(userId, updateCustomerContract));
@@ -121,7 +121,7 @@ public class UsersController(
         var validationResult = await _updateDeveloperValidator.ValidateAsync(updateDeveloperContract);
         if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
         var tokenArr = token.Split(" ");
-        if(tokenArr[1] == null) return BadRequest();
+        if(tokenArr.Length != 2) return BadRequest();
         var userId = _authenticationService.GetId(tokenArr[1]);
         if(userId == null) return BadRequest();
         return Ok(await _userService.Update<DeveloperContract, Developer, UpdateDeveloperContract>(userId, updateDeveloperContract));
@@ -141,7 +141,7 @@ public class UsersController(
     public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] string token)
     {
         var tokenArr = token.Split(" ");
-        if(tokenArr[1] == null) return BadRequest();
+        if(tokenArr.Length != 2) return BadRequest();
         var userId = _authenticationService.GetId(tokenArr[1]);
         if(userId == null) return BadRequest();
         var role = _authenticationService.GetRole(tokenArr[1]);

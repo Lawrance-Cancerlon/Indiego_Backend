@@ -135,10 +135,10 @@ public class UserService(
             repository = (IUserRepository<TEntity>)_customerRepository;
         else
             repository = (IUserRepository<TEntity>)_userRepository;
-        var user = (await repository.Get(id))[0];
-        if (user == null) return null;
-        user = await repository.Update(id, _mapper.Map(update, user));
-        return _mapper.Map<TResponse>(user);
+        var userList = await repository.Get(id);
+        if (userList.Count == 0) return null;
+        var updatedUser = await repository.Update(id, _mapper.Map(update, userList[0]));
+        return _mapper.Map<TResponse>(updatedUser);
     }
 
     public async Task<TResponse?> Delete<TResponse, TEntity>(string id)
