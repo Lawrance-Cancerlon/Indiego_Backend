@@ -56,7 +56,7 @@ public class GameService(IGameRepository repository, IAuthenticationService auth
         var gameList = await _repository.Get(id);
         if (gameList.Count == 0) return;
         var game = gameList[0];
-        game.Downloads.Add(userId);
+        if (!game.Downloads.Contains(userId)) game.Downloads.Add(userId);
         await _repository.Update(id, game);
     }
 }

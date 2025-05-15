@@ -26,6 +26,11 @@ public class UserMapper : Profile
         CreateMap<Developer, DeveloperContract>()
             .ForMember(p => p.Role, option => option.MapFrom(source => source.GetType().Name))
             .ForMember(p => p.IsSubscribed, option => option.MapFrom(source => source.SubscriptionId != null));
-        CreateMap<UpdateDeveloperContract, Developer>().ForAllMembers(p => p.Condition((source, destination, member) => member != null));
+        CreateMap<UpdateDeveloperContract, Developer>().ForAllMembers(p => p.Condition((source, destination, sourceMember, destinationMember, context) => {
+            if (sourceMember == null) return false;
+            if (sourceMember is string str && string.IsNullOrEmpty(str)) return false;
+            if (sourceMember is List<string> list && list.Count == 0) return false;
+            return true;
+        }));
     }
 }

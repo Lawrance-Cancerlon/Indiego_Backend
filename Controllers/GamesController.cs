@@ -23,9 +23,9 @@ public class GamesController(
     private readonly string _storagePath = Path.Combine(Directory.GetCurrentDirectory(), "Storage");
 
     [HttpGet]
-    public async Task<IActionResult> Get([FromQuery] string? id, [FromQuery] string? developerId, [FromQuery] string? genreId)
+    public async Task<IActionResult> Get([FromQuery] string? id, [FromQuery] string? userId, [FromQuery] string? genreId)
     {
-        return Ok(await _gameService.Get(id, developerId, genreId));
+        return Ok(await _gameService.Get(id, userId, genreId));
     }
 
     [HttpGet("download/{id}")]
@@ -72,7 +72,31 @@ public class GamesController(
         return Ok(new { message = "Game uploaded successfully"});
     }
 
-    // [HttpPut("{id}")]
-    // [Authorize("Developer")]
+    [HttpPut("{id}")]
+    [Authorize("Developer")]
+    public async Task<IActionResult> Update([FromHeader(Name = "Authorization")] string token, [FromRoute] string id, [FromBody] UpdateGameContract update)
+    {
+        var gameList = await _gameService.Get(id);
+        if (gameList.Count == 0) return NotFound();
+        var tokenArr = token.Split(" ");
+        if (tokenArr.Length != 2) return BadRequest();
+        if (_authenticationService.GetId(tokenArr[1]) != gameList[0].UserId) return Forbid();
+        var validationResult = await _updateGameValidator.ValidateAsync(update);
+        if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+        return Ok(await _gameService.Update(id, update));
+    }
 
+    [HttpDelete("{id}")]
+    [Authorize("Developer")]
+    public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
+    {
+        var gameList = await _gameService.Get(id);
+        if (gameList.Count == 0) return NotFound();
+        var tokenArr = token.Split(" ");
+        if (tokenArr.Length != 2) return BadRequest();
+        if (_authenticationService.GetId(tokenArr[1]) != gameList[0].UserId) return Forbid();
+        var filePath = Path.Combine(_storagePath, $"{id}.zip");
+        if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
+        return Ok(await _gameService.Delete(id));
+    }
 }
