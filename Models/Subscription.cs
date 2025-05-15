@@ -11,6 +11,8 @@ public class Subscription
     public string Id { get; set; } = null!;
     [BsonElement("UserId")]
     public string UserId { get; set; } = null!;
+    [BsonElement("SubscriptionTypeId")]
+    public string SubscriptionTypeId { get; set; } = null!;
     [BsonElement("Expire")]
-    public DateTime Expire { get; set; }
+    public string Expire { get; set; } = null!;
 }

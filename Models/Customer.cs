@@ -1,4 +1,6 @@
 using System;
+using Indiego_Backend.Contracts;
+using Indiego_Backend.Utilities;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Indiego_Backend.Models;
@@ -14,7 +16,7 @@ public class Customer : User
     [BsonElement("Favorites")]
     public List<string> Favorites { get; set; } = [];
     [BsonElement("Downloads")]
-    public List<string> Downloads { get; set; } = [];
+    public List<Download> Downloads { get; set; } = [];
     [BsonElement("BirthDate")]
-    public DateTime BirthDate { get; set; }
+    public string BirthDate { get; set; } = null!;
 }

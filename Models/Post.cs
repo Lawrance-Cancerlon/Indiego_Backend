@@ -1,4 +1,5 @@
 using System;
+using Indiego_Backend.Utilities;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -17,4 +18,6 @@ public class Post
     public string Text { get; set; } = null!;
     [BsonElement("Likes")]
     public List<string> Likes { get; set; } = [];
+    [BsonElement("CreatedAt")]
+    public string CreatedAt { get; set; } = DatetimeUtility.ToUnixTimestampString(DateTime.Now);
 }

@@ -1,4 +1,6 @@
 using System;
+using Indiego_Backend.Contracts;
+using Indiego_Backend.Utilities;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -12,7 +14,7 @@ public class Game
     [BsonElement("UserId")]
     public string UserId { get; set; } = null!;
     [BsonElement("Downloads")]
-    public List<string> Downloads { get; set; } = [];
+    public List<Download> Downloads { get; set; } = [];
     [BsonElement("ReviewIds")]
     public List<string> ReviewIds { get; set; } = [];
     [BsonElement("Name")]
@@ -21,4 +23,6 @@ public class Game
     public string Description { get; set; } = null!;
     [BsonElement("GenreIds")]
     public List<string> GenreIds { get; set; } = null!;
+    [BsonElement("CreatedAt")]
+    public string CreatedAt { get; set; } = DatetimeUtility.ToUnixTimestampString(DateTime.Now);
 }

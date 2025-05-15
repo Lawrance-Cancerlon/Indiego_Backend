@@ -1,4 +1,5 @@
 using System;
+using Indiego_Backend.Utilities;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -17,4 +18,6 @@ public class Review
     public string Text { get; set; } = "";
     [BsonElement("Rating")]
     public int Rating { get; set; } = 0;
+    [BsonElement("CreatedAt")]
+    public string CreatedAt { get; set; } = DatetimeUtility.ToUnixTimestampString(DateTime.Now);
 }

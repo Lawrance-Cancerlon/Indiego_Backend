@@ -13,9 +13,9 @@ public record class CustomerContract : UserContract
     [JsonPropertyName("favorites")]
     public List<string> Favorites { get; init; } = null!;
     [JsonPropertyName("downloads")]
-    public List<string> Downloads { get; init; } = null!;
+    public List<Download> Downloads { get; init; } = null!;
     [JsonPropertyName("birthDate")]
-    public DateTime BirthDate { get; init; }
+    public string BirthDate { get; init; } = null!;
     [JsonPropertyName("isSubscribed")]
     public bool IsSubscribed { get; init; } = false;
 }
@@ -23,11 +23,11 @@ public record class CustomerContract : UserContract
 public record class CreateCustomerContract : CreateUserContract
 {
     [JsonPropertyName("birthDate")]
-    public DateTime BirthDate { get; init; }
+    public string BirthDate { get; init; } = null!;
 }
 
 public record class UpdateCustomerContract : UpdateUserContract
 {
     [JsonPropertyName("birthDate")]
-    public DateTime? BirthDate { get; init; } = null;
+    public string? BirthDate { get; init; } = null;
 }

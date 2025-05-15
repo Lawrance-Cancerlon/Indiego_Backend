@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Indiego_Backend.Utilities;
 
 namespace Indiego_Backend.Contracts;
 
@@ -18,6 +19,8 @@ public record class GameContract
     public string Description { get; init; } = null!;
     [JsonPropertyName("genreIds")]
     public List<string> GenreIds { get; init; } = null!;
+    [JsonPropertyName("createdAt")]
+    public string CreatedAt { get; init; } = null!;
 }
 
 public record class CreateGameContract
@@ -38,4 +41,14 @@ public record class UpdateGameContract
     public string? Description { get; init; } = null;
     [JsonPropertyName("genreIds")]
     public List<string>? GenreIds { get; init; } = null;
+}
+
+public record class Download
+{
+    [JsonPropertyName("userId")]
+    public string UserId { get; init; } = null!;
+    [JsonPropertyName("gameId")]
+    public string GameId { get; init; } = null!;
+    [JsonPropertyName("timestamp")]
+    public string Timestamp = DatetimeUtility.ToUnixTimestampString(DateTime.Now);
 }

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Indiego_Backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d1f6f9ccfb7b5c126e109ec9e552924389658a85")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+37617e8e4d085ece4d714f112b114455e6bd1a41")]
 [assembly: System.Reflection.AssemblyProductAttribute("Indiego_Backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Indiego_Backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
