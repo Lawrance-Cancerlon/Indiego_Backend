@@ -10,6 +10,6 @@ public class CreateGenreValidator : AbstractValidator<CreateGenreContract>
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required.")
-            .MaximumLength(50).WithMessage("Name must not exceed 50 characters.");
+            .Length(3, 100).WithMessage("Name must be between 3 and 100 characters long.");
     }
 }

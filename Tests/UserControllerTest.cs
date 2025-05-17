@@ -22,7 +22,6 @@ namespace Indiego_Backend.Tests
         private Mock<IValidator<UpdateAdminContract>> _mockUpdateAdminValidator = null!;
         private Mock<IValidator<CreateCustomerContract>> _mockCreateCustomerValidator = null!;
         private Mock<IValidator<UpdateCustomerContract>> _mockUpdateCustomerValidator = null!;
-        private Mock<IValidator<UpdateDeveloperContract>> _mockUpdateDeveloperValidator = null!;
 
         [SetUp]
         public void Setup()
@@ -35,7 +34,6 @@ namespace Indiego_Backend.Tests
             _mockUpdateAdminValidator = new Mock<IValidator<UpdateAdminContract>>();
             _mockCreateCustomerValidator = new Mock<IValidator<CreateCustomerContract>>();
             _mockUpdateCustomerValidator = new Mock<IValidator<UpdateCustomerContract>>();
-            _mockUpdateDeveloperValidator = new Mock<IValidator<UpdateDeveloperContract>>();
 
             _controller = new UsersController(
                 _mockUserService.Object,
@@ -45,8 +43,7 @@ namespace Indiego_Backend.Tests
                 _mockCreateAdminValidator.Object,
                 _mockUpdateAdminValidator.Object,
                 _mockCreateCustomerValidator.Object,
-                _mockUpdateCustomerValidator.Object,
-                _mockUpdateDeveloperValidator.Object
+                _mockUpdateCustomerValidator.Object
             );
         }
 
@@ -428,93 +425,6 @@ namespace Indiego_Backend.Tests
 
             // Act
             var result = await _controller.Update(token, updateCustomerContract);
-
-            // Assert
-            Assert.That(result, Is.InstanceOf<BadRequestResult>());
-        }
-
-        [Test]
-        public async Task UpdateDeveloper_WithValidData_ReturnsOk()
-        {
-            // Arrange
-            var token = "Bearer testToken";
-            var updateDeveloperContract = new UpdateDeveloperContract();
-            var developerContract = new DeveloperContract();
-            
-            var validationResult = new ValidationResult();
-            _mockUpdateDeveloperValidator.Setup(v => v.ValidateAsync(updateDeveloperContract, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(validationResult);
-
-            _mockAuthService.Setup(s => s.GetId("testToken")).Returns("userId");
-            _mockUserService.Setup(s => s.Update<DeveloperContract, Developer, UpdateDeveloperContract>("userId", updateDeveloperContract))
-                .ReturnsAsync(developerContract);
-
-            // Act
-            var result = await _controller.UpdateDeveloper(token, updateDeveloperContract) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result!.StatusCode, Is.EqualTo(200));
-            Assert.That(result.Value, Is.EqualTo(developerContract));
-        }
-
-        [Test]
-        public async Task UpdateDeveloper_WithInvalidData_ReturnsBadRequest()
-        {
-            // Arrange
-            var token = "Bearer testToken";
-            var updateDeveloperContract = new UpdateDeveloperContract();
-            var validationFailures = new List<ValidationFailure>
-            {
-                new("Bio", "Bio is required")
-            };
-            
-            var validationResult = new ValidationResult(validationFailures);
-            _mockUpdateDeveloperValidator.Setup(v => v.ValidateAsync(updateDeveloperContract, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(validationResult);
-
-            // Act
-            var result = await _controller.UpdateDeveloper(token, updateDeveloperContract) as BadRequestObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result!.StatusCode, Is.EqualTo(400));
-            Assert.That(result.Value, Is.EqualTo(validationFailures));
-        }
-
-        [Test]
-        public async Task UpdateDeveloper_WithInvalidToken_ReturnsBadRequest()
-        {
-            // Arrange
-            var token = "InvalidToken";
-            var updateDeveloperContract = new UpdateDeveloperContract();
-            var validationResult = new ValidationResult();
-            
-            _mockUpdateDeveloperValidator.Setup(v => v.ValidateAsync(updateDeveloperContract, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(validationResult);
-
-            // Act
-            var result = await _controller.UpdateDeveloper(token, updateDeveloperContract);
-
-            // Assert
-            Assert.That(result, Is.InstanceOf<BadRequestResult>());
-        }
-
-        [Test]
-        public async Task UpdateDeveloper_WithNullUserId_ReturnsBadRequest()
-        {
-            // Arrange
-            var token = "Bearer testToken";
-            var updateDeveloperContract = new UpdateDeveloperContract();
-            var validationResult = new ValidationResult();
-            
-            _mockUpdateDeveloperValidator.Setup(v => v.ValidateAsync(updateDeveloperContract, It.IsAny<CancellationToken>()))
-                .ReturnsAsync(validationResult);
-            
-            _mockAuthService.Setup(s => s.GetId("testToken")).Returns((string?)null);
-
-            // Act
-            var result = await _controller.UpdateDeveloper(token, updateDeveloperContract);
 
             // Assert
             Assert.That(result, Is.InstanceOf<BadRequestResult>());

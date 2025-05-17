@@ -10,15 +10,19 @@ public record class GameContract
     [JsonPropertyName("userId")]
     public string UserId { get; init; } = null!;
     [JsonPropertyName("downloads")]
-    public int Downloads { get; init; } = 0;
+    public int Downloads { get; init; }
     [JsonPropertyName("reviewIds")]
-    public List<string> ReviewIds { get; init; } = [];
+    public List<string> ReviewIds { get; init; } = null!;
     [JsonPropertyName("name")]
     public string Name { get; init; } = null!;
     [JsonPropertyName("description")]
     public string Description { get; init; } = null!;
     [JsonPropertyName("genreIds")]
     public List<string> GenreIds { get; init; } = null!;
+    [JsonPropertyName("rating")]
+    public decimal Rating { get; init; }
+    [JsonPropertyName("ratingCount")]
+    public int RatingCount { get; init; }
     [JsonPropertyName("createdAt")]
     public string CreatedAt { get; init; } = null!;
 }

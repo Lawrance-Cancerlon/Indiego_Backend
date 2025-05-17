@@ -41,6 +41,7 @@ builder.Services.AddAuthentication(options => {
 });
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("Admin", policy => policy.RequireClaim(ClaimTypes.Role, "Admin"))
+    .AddPolicy("NotAdmin", policy => policy.RequireClaim(ClaimTypes.Role, "Customer", "Developer"))
     .AddPolicy("Customer", policy => policy.RequireClaim(ClaimTypes.Role, "Customer"))
     .AddPolicy("Developer", policy => policy.RequireClaim(ClaimTypes.Role, "Developer"))
     .AddPolicy("Subscribed", policy => policy.RequireClaim("subscription", "true"))
@@ -52,30 +53,45 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminWithManageReviews", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageReviews", "true"))
     .AddPolicy("AdminWithManageTransactions", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageTransactions", "true"));
 
+//Repositories
+builder.Services.AddSingleton<IGameRepository, GameRepository>();
+builder.Services.AddSingleton<IGenreRepository, GenreRepository>();
+builder.Services.AddSingleton<IPostRepository, PostRepository>();
+builder.Services.AddSingleton<IReviewRepository, ReviewRepository>();
+builder.Services.AddSingleton<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddSingleton<ISubscriptionTypeRepository, SubscriptionTypeRepository>();
+builder.Services.AddSingleton<ITransactionRepository, TransactionRepository>();
+builder.Services.AddSingleton<IUserRepository<User>, UserRepository<User>>();
+builder.Services.AddSingleton<IUserRepository<Admin>, UserRepository<Admin>>();
+builder.Services.AddSingleton<IUserRepository<Customer>, UserRepository<Customer>>();
+builder.Services.AddSingleton<IUserRepository<Developer>, UserRepository<Developer>>();
+
 //AutoMappers
-builder.Services.AddAutoMapper(typeof(UserMapper));
-builder.Services.AddAutoMapper(typeof(GenreMapper));
 builder.Services.AddAutoMapper(typeof(GameMapper));
+builder.Services.AddAutoMapper(typeof(GenreMapper));
+builder.Services.AddAutoMapper(typeof(PostMapper));
+builder.Services.AddAutoMapper(typeof(ReviewMapper));
+builder.Services.AddAutoMapper(typeof(SubscriptionMapper));
+builder.Services.AddAutoMapper(typeof(SubscriptionTypeMapper));
+builder.Services.AddAutoMapper(typeof(UserMapper));
 
 //Validators
+builder.Services.AddSingleton<IValidator<CreateGameContract>, CreateGameValidator>();
+builder.Services.AddSingleton<IValidator<UpdateGameContract>, UpdateGameValidator>();
+builder.Services.AddSingleton<IValidator<CreateGenreContract>, CreateGenreValidator>();
+builder.Services.AddSingleton<IValidator<CreatePostContract>, CreatePostValidator>();
+builder.Services.AddSingleton<IValidator<UpdatePostContract>, UpdatePostValidator>();
+builder.Services.AddSingleton<IValidator<CreateReviewContract>, CreateReviewValidator>();
+builder.Services.AddSingleton<IValidator<UpdateReviewContract>, UpdateReviewValidator>();
+builder.Services.AddSingleton<IValidator<CreateSubscriptionContract>, CreateSubscriptionValidator>();
+builder.Services.AddSingleton<IValidator<CreateSubscriptionTypeContract>, CreateSubscriptionTypeValidator>();
+builder.Services.AddSingleton<IValidator<UpdateSubscriptionTypeContract>, UpdateSubscriptionTypeValidator>();
 builder.Services.AddSingleton<IValidator<CreateUserContract>, CreateUserValidator>();
 builder.Services.AddSingleton<IValidator<UpdateUserContract>, UpdateUserValidator>();
 builder.Services.AddSingleton<IValidator<CreateAdminContract>, CreateAdminValidator>();
 builder.Services.AddSingleton<IValidator<UpdateAdminContract>, UpdateAdminValidator>();
 builder.Services.AddSingleton<IValidator<CreateCustomerContract>, CreateCustomerValidator>();
 builder.Services.AddSingleton<IValidator<UpdateCustomerContract>, UpdateCustomerValidator>();
-builder.Services.AddSingleton<IValidator<UpdateDeveloperContract>, UpdateDeveloperValidator>();
-builder.Services.AddSingleton<IValidator<CreateGenreContract>, CreateGenreValidator>();
-builder.Services.AddSingleton<IValidator<CreateGameContract>, CreateGameValidator>();
-builder.Services.AddSingleton<IValidator<UpdateGameContract>, UpdateGameValidator>();
-
-//Repositories
-builder.Services.AddSingleton<IUserRepository<User>, UserRepository<User>>();
-builder.Services.AddSingleton<IUserRepository<Admin>, UserRepository<Admin>>();
-builder.Services.AddSingleton<IUserRepository<Customer>, UserRepository<Customer>>();
-builder.Services.AddSingleton<IUserRepository<Developer>, UserRepository<Developer>>();
-builder.Services.AddSingleton<IGenreRepository, GenreRepository>();
-builder.Services.AddSingleton<IGameRepository, GameRepository>();
 
 //Services
 builder.Services.AddSingleton<IUserService, UserService>();

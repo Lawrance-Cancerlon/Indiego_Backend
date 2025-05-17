@@ -13,6 +13,11 @@ public interface IDatabaseService
     IMongoCollection<Admin> Admins { get; }
     IMongoCollection<Genre> Genres { get; }
     IMongoCollection<Game> Games { get; }
+    IMongoCollection<Subscription> Subscriptions { get; }
+    IMongoCollection<Review> Reviews { get; }
+    IMongoCollection<Post> Posts { get; }
+    IMongoCollection<SubscriptionType> SubscriptionTypes { get; }
+    IMongoCollection<Transaction> Transactions { get; }
 }
 
 public class DatabaseService(DatabaseSetting database) : IDatabaseService
@@ -25,4 +30,9 @@ public class DatabaseService(DatabaseSetting database) : IDatabaseService
     public IMongoCollection<Admin> Admins => _database.GetCollection<Admin>("users");
     public IMongoCollection<Genre> Genres => _database.GetCollection<Genre>("genres");
     public IMongoCollection<Game> Games => _database.GetCollection<Game>("games");
+    public IMongoCollection<Subscription> Subscriptions => _database.GetCollection<Subscription>("subscriptions");
+    public IMongoCollection<Review> Reviews => _database.GetCollection<Review>("reviews");
+    public IMongoCollection<Post> Posts => _database.GetCollection<Post>("posts");
+    public IMongoCollection<SubscriptionType> SubscriptionTypes => _database.GetCollection<SubscriptionType>("subscriptionTypes");
+    public IMongoCollection<Transaction> Transactions => _database.GetCollection<Transaction>("transactions");
 }

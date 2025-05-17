@@ -10,7 +10,7 @@ public class CreateUserValidator : AbstractValidator<CreateUserContract>
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required.")
-            .Length(3, 20).WithMessage("Name must be between 3 and 20 characters long.")
+            .Length(3, 100).WithMessage("Name must be between 3 and 100 characters long.")
             .Matches(@"^[a-zA-Z0-9 ]+$").WithMessage("Name can only contain letters, numbers, and spaces.");
 
         RuleFor(x => x.Password)
@@ -33,7 +33,7 @@ public class UpdateUserValidator : AbstractValidator<UpdateUserContract>
     {
         When(x => !string.IsNullOrEmpty(x.Name), () => {
             RuleFor(x => x.Name)
-                .Length(3, 20).WithMessage("Name must be between 3 and 20 characters long.")
+                .Length(3, 100).WithMessage("Name must be between 3 and 100 characters long.")
                 .Matches(@"^[a-zA-Z0-9 ]+$").WithMessage("Name can only contain letters, numbers, and spaces.");
         });
         When(x => !string.IsNullOrEmpty(x.Password), () => {

@@ -17,7 +17,7 @@ public record class CustomerContract : UserContract
     [JsonPropertyName("birthDate")]
     public string BirthDate { get; init; } = null!;
     [JsonPropertyName("isSubscribed")]
-    public bool IsSubscribed { get; init; } = false;
+    public bool IsSubscribed { get; init; }
 }
 
 public record class CreateCustomerContract : CreateUserContract

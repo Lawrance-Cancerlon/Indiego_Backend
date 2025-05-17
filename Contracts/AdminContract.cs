@@ -6,33 +6,33 @@ namespace Indiego_Backend.Contracts;
 public record class AdminContract : UserContract
 {
     [JsonPropertyName("canManageAdmins")]
-    public bool CanManageAdmins { get; init; } = false;
+    public bool CanManageAdmins { get; init; }
     [JsonPropertyName("canManageUsers")]
-    public bool CanManageUsers { get; init; } = false;
+    public bool CanManageUsers { get; init; }
     [JsonPropertyName("canManageGames")]
-    public bool CanManageGames { get; init; } = false;
+    public bool CanManageGames { get; init; }
     [JsonPropertyName("canManagePosts")]
-    public bool CanManagePosts { get; init; } = false;
+    public bool CanManagePosts { get; init; }
     [JsonPropertyName("canManageReviews")]
-    public bool CanManageReviews { get; init; } = false;
+    public bool CanManageReviews { get; init; }
     [JsonPropertyName("canManageTransactions")]
-    public bool CanManageTransactions { get; init; } = false;
+    public bool CanManageTransactions { get; init; }
 }
 
 public record class CreateAdminContract : CreateUserContract
 {
     [JsonPropertyName("canManageAdmins")]
-    public bool CanManageAdmins { get; init; } = false;
+    public bool CanManageAdmins { get; init; }
     [JsonPropertyName("canManageUsers")]
-    public bool CanManageUsers { get; init; } = false;
+    public bool CanManageUsers { get; init; }
     [JsonPropertyName("canManageGames")]
-    public bool CanManageGames { get; init; } = false;
+    public bool CanManageGames { get; init; }
     [JsonPropertyName("canManagePosts")]
-    public bool CanManagePosts { get; init; } = false;
+    public bool CanManagePosts { get; init; }
     [JsonPropertyName("canManageReviews")]
-    public bool CanManageReviews { get; init; } = false;
+    public bool CanManageReviews { get; init; }
     [JsonPropertyName("canManageTransactions")]
-    public bool CanManageTransactions { get; init; } = false;
+    public bool CanManageTransactions { get; init; }
 }
 
 public record class UpdateAdminContract : UpdateUserContract

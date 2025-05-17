@@ -10,5 +10,5 @@ public class Developer : Customer
     [BsonElement("PostIds")]
     public List<string> PostIds { get; set; } = [];
     [BsonElement("Balance")]
-    public decimal Balance { get; set; } = 0;
+    public int Balance { get; set; } = 0;
 }

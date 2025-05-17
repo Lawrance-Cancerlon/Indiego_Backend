@@ -18,8 +18,7 @@ public class UsersController(
     IValidator<CreateAdminContract> createAdminValidator,
     IValidator<UpdateAdminContract> updateAdminValidator,
     IValidator<CreateCustomerContract> createCustomerValidator,
-    IValidator<UpdateCustomerContract> updateCustomerValidator,
-    IValidator<UpdateDeveloperContract> updateDeveloperValidator
+    IValidator<UpdateCustomerContract> updateCustomerValidator
 ) : ControllerBase
 {
     private readonly IUserService _userService = userService;
@@ -30,7 +29,6 @@ public class UsersController(
     private readonly IValidator<UpdateAdminContract> _updateAdminValidator = updateAdminValidator;
     private readonly IValidator<CreateCustomerContract> _createCustomerValidator = createCustomerValidator;
     private readonly IValidator<UpdateCustomerContract> _updateCustomerValidator = updateCustomerValidator;
-    private readonly IValidator<UpdateDeveloperContract> _updateDeveloperValidator = updateDeveloperValidator;
 
     [HttpGet("me")]
     [Authorize]
@@ -102,7 +100,7 @@ public class UsersController(
     }
 
     [HttpPut]
-    [Authorize("Customer")]
+    [Authorize("NotAdmin")]
     public async Task<IActionResult> Update([FromHeader(Name = "Authorization")] string token, [FromBody] UpdateCustomerContract updateCustomerContract)
     {
         var validationResult = await _updateCustomerValidator.ValidateAsync(updateCustomerContract);
@@ -112,19 +110,6 @@ public class UsersController(
         var userId = _authenticationService.GetId(tokenArr[1]);
         if(userId == null) return BadRequest();
         return Ok(await _userService.Update<CustomerContract, Customer, UpdateCustomerContract>(userId, updateCustomerContract));
-    }
-
-    [HttpPut("developer")]
-    [Authorize("Developer")]
-    public async Task<IActionResult> UpdateDeveloper([FromHeader(Name = "Authorization")] string token, [FromBody] UpdateDeveloperContract updateDeveloperContract)
-    {
-        var validationResult = await _updateDeveloperValidator.ValidateAsync(updateDeveloperContract);
-        if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
-        var tokenArr = token.Split(" ");
-        if(tokenArr.Length != 2) return BadRequest();
-        var userId = _authenticationService.GetId(tokenArr[1]);
-        if(userId == null) return BadRequest();
-        return Ok(await _userService.Update<DeveloperContract, Developer, UpdateDeveloperContract>(userId, updateDeveloperContract));
     }
 
     [HttpPut("admin/{id}")]

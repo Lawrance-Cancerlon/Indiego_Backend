@@ -24,6 +24,8 @@
 
   <ItemGroup>
     <Folder Include="Storage\" />
+    <Folder Include="Storage\Games\" />
+    <Folder Include="Storage\Images\" />
   </ItemGroup>
 
 </Project>
