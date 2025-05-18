@@ -60,7 +60,6 @@ builder.Services.AddSingleton<IPostRepository, PostRepository>();
 builder.Services.AddSingleton<IReviewRepository, ReviewRepository>();
 builder.Services.AddSingleton<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddSingleton<ISubscriptionTypeRepository, SubscriptionTypeRepository>();
-builder.Services.AddSingleton<ITransactionRepository, TransactionRepository>();
 builder.Services.AddSingleton<IUserRepository<User>, UserRepository<User>>();
 builder.Services.AddSingleton<IUserRepository<Admin>, UserRepository<Admin>>();
 builder.Services.AddSingleton<IUserRepository<Customer>, UserRepository<Customer>>();
