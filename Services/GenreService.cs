@@ -8,11 +8,11 @@ namespace Indiego_Backend.Services;
 
 public interface IGenreService
 {
-    Task<List<GenreContract>> Get(string? id = null);
+    Task<List<GenreContract>> Get(string? id = null, string? gameId = null);
     Task<GenreContract?> Create(CreateGenreContract create);
     Task<GenreContract?> Delete(string id);
-    Task GameCreated(string id, List<string> genreIds);
-    Task GameDeleted(string id, List<string> genreIds);
+    Task AddGame(string genreId, string gameId);
+    Task RemoveGame(string genreId, string gameId);
 }
 
 public class GenreService(IGenreRepository repository, IMapper mapper) : IGenreService
@@ -20,9 +20,9 @@ public class GenreService(IGenreRepository repository, IMapper mapper) : IGenreS
     private readonly IGenreRepository _repository = repository;
     private readonly IMapper _mapper = mapper;
 
-    public async Task<List<GenreContract>> Get(string? id = null)
+    public async Task<List<GenreContract>> Get(string? id = null, string? gameId = null)
     {
-        return _mapper.Map<List<GenreContract>>(await _repository.Get(id));
+        return _mapper.Map<List<GenreContract>>(await _repository.Get(id, gameId));
     }
 
     public async Task<GenreContract?> Create(CreateGenreContract create)
@@ -37,25 +37,21 @@ public class GenreService(IGenreRepository repository, IMapper mapper) : IGenreS
         return _mapper.Map<GenreContract>(genre);
     }
 
-    public async Task GameCreated(string id, List<string> genreIds)
+    public async Task AddGame(string genreId, string gameId)
     {
-        foreach (var genreId in genreIds)
-        {
-            var genre = (await _repository.Get(genreId)).FirstOrDefault();
-            if (genre == null) continue;
-            genre.GameIds.Add(id);
-            await _repository.Update(genreId, genre);
-        }
+        var genre = (await _repository.Get(genreId)).FirstOrDefault();
+        if (genre == null) return;
+
+        if(!genre.GameIds.Contains(gameId)) genre.GameIds.Add(gameId);
+        await _repository.Update(genreId, genre);
     }
 
-    public async Task GameDeleted(string id, List<string> genreIds)
+    public async Task RemoveGame(string genreId, string gameId)
     {
-        foreach (var genreId in genreIds)
-        {
-            var genre = (await _repository.Get(genreId)).FirstOrDefault();
-            if (genre == null) continue;
-            genre.GameIds.Remove(id);
-            await _repository.Update(genreId, genre);
-        }
+        var genre = (await _repository.Get(genreId)).FirstOrDefault();
+        if (genre == null) return;
+
+        genre.GameIds.Remove(gameId);
+        await _repository.Update(genreId, genre);
     }
 }

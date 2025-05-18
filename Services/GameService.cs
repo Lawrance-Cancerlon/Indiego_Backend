@@ -12,9 +12,9 @@ public interface IGameService
     Task<GameContract?> Create(CreateGameContract create, string token);
     Task<GameContract?> Update(string id, UpdateGameContract update);
     Task<GameContract?> Delete(string id);
-    Task Download(string token, string gameId);
-    Task AddReview(string token, string reviewId);
-    Task RemoveReview(string token, string reviewId);
+    Task Download(string gameId, string token);
+    Task AddReview(string gameId, string reviewId);
+    Task RemoveReview(string gameId, string reviewId);
 }
 
 public class GameService(IGameRepository repository, IAuthenticationService authenticationService, IMapper mapper) : IGameService
@@ -51,7 +51,7 @@ public class GameService(IGameRepository repository, IAuthenticationService auth
         return _mapper.Map<GameContract>(game);
     }
 
-    public async Task Download(string token, string gameId)
+    public async Task Download(string gameId, string token)
     {
         var userId = _authenticationService.GetId(token);
         if (userId == null) return;
@@ -65,6 +65,24 @@ public class GameService(IGameRepository repository, IAuthenticationService auth
             GameId = game.Id
         };
         if (!game.Downloads.Any(d => d.UserId == userId && d.GameId == game.Id)) game.Downloads.Add(download);
+        await _repository.Update(gameId, game);
+    }
+
+    public async Task AddReview(string gameId, string reviewId)
+    {
+        var game = (await _repository.Get(gameId)).FirstOrDefault();
+        if (game == null) return;
+
+        if(!game.ReviewIds.Contains(reviewId))game.ReviewIds.Add(reviewId);
+        await _repository.Update(gameId, game);
+    }
+
+    public async Task RemoveReview(string gameId, string reviewId)
+    {
+        var game = (await _repository.Get(gameId)).FirstOrDefault();
+        if (game == null) return;
+
+        game.ReviewIds.Remove(reviewId);
         await _repository.Update(gameId, game);
     }
 }

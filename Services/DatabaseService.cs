@@ -17,7 +17,6 @@ public interface IDatabaseService
     IMongoCollection<Review> Reviews { get; }
     IMongoCollection<Post> Posts { get; }
     IMongoCollection<SubscriptionType> SubscriptionTypes { get; }
-    IMongoCollection<Transaction> Transactions { get; }
 }
 
 public class DatabaseService(DatabaseSetting database) : IDatabaseService
@@ -34,5 +33,4 @@ public class DatabaseService(DatabaseSetting database) : IDatabaseService
     public IMongoCollection<Review> Reviews => _database.GetCollection<Review>("reviews");
     public IMongoCollection<Post> Posts => _database.GetCollection<Post>("posts");
     public IMongoCollection<SubscriptionType> SubscriptionTypes => _database.GetCollection<SubscriptionType>("subscriptionTypes");
-    public IMongoCollection<Transaction> Transactions => _database.GetCollection<Transaction>("transactions");
 }

@@ -42,10 +42,10 @@ public interface IUserService
     Task AddFavorite(string token, string gameId);
     Task RemoveFavorite(string token, string gameId);
     Task Download(string token, string gameId);
-    Task GameCreated(string token, string gameId);
-    Task GameDeleted(string token, string gameId);
-    Task PostCreated(string token, string postId);
-    Task PostDeleted(string token, string postId);
+    Task AddGame(string token, string gameId);
+    Task RemoveGame(string token, string gameId);
+    Task AddPost(string token, string postId);
+    Task RemovePost(string token, string postId);
     Task AddBalance(string token, int amount);
     Task RemoveBalance(string token, int amount);
     Task Subscribe(string token, string subscriptionId);
@@ -207,7 +207,7 @@ public class UserService(
         var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
         if (customer == null) return;
 
-        customer.ReviewIds.Add(reviewId);
+        if(!customer.ReviewIds.Contains(reviewId)) customer.ReviewIds.Add(reviewId);
         await _customerRepository.Update(userId, customer);
     }
 
@@ -231,7 +231,7 @@ public class UserService(
         var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
         if (customer == null) return;
 
-        customer.Likes.Add(postId);
+        if(!customer.Likes.Contains(postId)) customer.Likes.Add(postId);
         await _customerRepository.Update(userId, customer);
     }
 
@@ -255,7 +255,7 @@ public class UserService(
         var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
         if (customer == null) return;
 
-        customer.Favorites.Add(gameId);
+        if(!customer.Favorites.Contains(gameId)) customer.Favorites.Add(gameId);
         await _customerRepository.Update(userId, customer);
     }
 
@@ -288,7 +288,7 @@ public class UserService(
         await _customerRepository.Update(userId, customer);
     }
 
-    public async Task GameCreated(string token, string gameId)
+    public async Task AddGame(string token, string gameId)
     {
         var userId = _authenticationService.GetId(token);
         if (userId == null) return;
@@ -296,11 +296,11 @@ public class UserService(
         var developer = (await _developerRepository.Get(userId, null)).FirstOrDefault();
         if (developer == null) return;
 
-        developer.GameIds.Add(gameId);
+        if(!developer.GameIds.Contains(gameId)) developer.GameIds.Add(gameId);
         await _developerRepository.Update(userId, developer);
     }
 
-    public async Task GameDeleted(string token, string gameId)
+    public async Task RemoveGame(string token, string gameId)
     {
         var userId = _authenticationService.GetId(token);
         if (userId == null) return;
@@ -312,7 +312,7 @@ public class UserService(
         await _developerRepository.Update(userId, developer);
     }
 
-    public async Task PostCreated(string token, string postId)
+    public async Task AddPost(string token, string postId)
     {
         var userId = _authenticationService.GetId(token);
         if (userId == null) return;
@@ -320,11 +320,11 @@ public class UserService(
         var developer = (await _developerRepository.Get(userId, null)).FirstOrDefault();
         if (developer == null) return;
 
-        developer.PostIds.Add(postId);
+        if(!developer.PostIds.Contains(postId)) developer.PostIds.Add(postId);
         await _developerRepository.Update(userId, developer);
     }
 
-    public async Task PostDeleted(string token, string postId)
+    public async Task RemovePost(string token, string postId)
     {
         var userId = _authenticationService.GetId(token);
         if (userId == null) return;
