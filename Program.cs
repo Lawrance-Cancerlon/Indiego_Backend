@@ -41,17 +41,33 @@ builder.Services.AddAuthentication(options => {
 });
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("Admin", policy => policy.RequireClaim(ClaimTypes.Role, "Admin"))
-    .AddPolicy("NotAdmin", policy => policy.RequireClaim(ClaimTypes.Role, "Customer", "Developer"))
+    .AddPolicy("CustomerOrDeveloper", policy => policy.RequireClaim(ClaimTypes.Role, "Customer", "Developer"))
     .AddPolicy("Customer", policy => policy.RequireClaim(ClaimTypes.Role, "Customer"))
     .AddPolicy("Developer", policy => policy.RequireClaim(ClaimTypes.Role, "Developer"))
     .AddPolicy("Subscribed", policy => policy.RequireClaim("subscription", "true"))
     .AddPolicy("NotSubscribed", policy => policy.RequireClaim("subscription", "false"))
     .AddPolicy("AdminWithManageAdmins", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageAdmins", "true"))
-    .AddPolicy("AdminWithManageUsers", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageUsers", "true"))
     .AddPolicy("AdminWithManageGames", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageGames", "true"))
-    .AddPolicy("AdminWithManagePosts", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManagePosts", "true"))
-    .AddPolicy("AdminWithManageReviews", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageReviews", "true"))
-    .AddPolicy("AdminWithManageSubscriptions", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageSubscriptions", "true"));
+    .AddPolicy("AdminWithManageSubscriptions", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageSubscriptions", "true"))
+    .AddPolicy("DeveloperOrAdminWithManageGames", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Developer") ||
+            (context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Admin") &&
+             context.User.HasClaim(c => c.Type == "CanManageGames" && c.Value == "true"))
+        ))
+    .AddPolicy("DeveloperOrAdminWithManagePosts", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Developer") ||
+            (context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Admin") &&
+             context.User.HasClaim(c => c.Type == "CanManagePosts" && c.Value == "true"))
+        ))
+    .AddPolicy("CustomerOrDeveloperOrAdminWithManageReviews", policy =>
+        policy.RequireAssertion(context =>
+            context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Customer") ||
+            context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Developer") ||
+            (context.User.HasClaim(c => c.Type == ClaimTypes.Role && c.Value == "Admin") &&
+             context.User.HasClaim(c => c.Type == "CanManageReviews" && c.Value == "true"))
+        ));
 
 //Repositories
 builder.Services.AddSingleton<IGameRepository, GameRepository>();

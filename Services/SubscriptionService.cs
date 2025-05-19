@@ -11,6 +11,7 @@ public interface ISubscriptionService
     Task<List<SubscriptionContract>> Get(string? id = null, string? userId = null);
     Task<SubscriptionContract?> Create(CreateSubscriptionContract create, string token, IUserService userService);
     Task<SubscriptionContract?> Delete(string id, IUserService userService);
+    Task AddDownload(string token, string gameId, IUserService userService, IGameService gameService);
 }
 
 public class SubscriptionService(ISubscriptionRepository repository, IAuthenticationService authenticationService, IMapper mapper) : ISubscriptionService
@@ -46,5 +47,30 @@ public class SubscriptionService(ISubscriptionRepository repository, IAuthentica
         if (subscription == null) return null;
         await _userService.Unsubscribe(subscription.UserId);
         return _mapper.Map<SubscriptionContract>(subscription);
+    }
+
+    public async Task AddDownload(string token, string gameId, IUserService userService, IGameService gameService)
+    {
+        IUserService _userService = userService;
+        IGameService _gameService = gameService;
+
+        var userId = _authenticationService.GetId(token);
+        if (userId == null) return;
+
+        var user = (await _userService.Get<CustomerContract, Customer>(userId)).FirstOrDefault();
+        if (user == null) return;
+
+        var subscription = (await _repository.Get(user.SubscriptionId)).FirstOrDefault();
+        if (subscription == null) return;
+        if (subscription.Download < 10)
+        {
+            var game = (await _gameService.Get(gameId)).FirstOrDefault();
+            if (game == null) return;
+
+            await _userService.AddBalance(game.UserId, 1000);
+
+            subscription.Download++;
+        }
+        await _repository.Update(user.SubscriptionId!, subscription);
     }
 }

@@ -56,6 +56,7 @@ public class UsersController(
     }
 
     [HttpGet("admin")]
+    [Authorize("AdminWithManageAdmins")]
     public async Task<IActionResult> GetAdmin([FromQuery] string? id)
     {
         return Ok(await _userService.Get<AdminContract, Admin>(id));
@@ -95,8 +96,26 @@ public class UsersController(
         return Ok(await _userService.Create<AdminContract, Admin, CreateAdminContract>(createAdminContract));
     }
 
+    [HttpPost("withdraw/{amount}")]
+    [Authorize("Developer")]
+    public async Task<IActionResult> Withdraw([FromHeader(Name = "Authorization")] string token, [FromRoute] int amount)
+    {
+        var tokenArr = token.Split(" ");
+        if (tokenArr.Length != 2) return BadRequest();
+
+        var userId = _authenticationService.GetId(tokenArr[1]);
+        if (userId == null) return BadRequest();
+
+        var user = (await _userService.Get<DeveloperContract, Developer>(userId)).FirstOrDefault();
+        if (user == null) return BadRequest();
+        if (user.Balance < amount) return BadRequest("Not enough balance");
+        
+        await _userService.RemoveBalance(userId, amount);
+        return Ok(new { message = "Withdraw balance successful" });
+    }
+
     [HttpPut]
-    [Authorize("NotAdmin")]
+    [Authorize("CustomerOrDeveloper")]
     public async Task<IActionResult> Update([FromHeader(Name = "Authorization")] string token, [FromBody] UpdateCustomerContract updateCustomerContract)
     {
         var validationResult = await _updateCustomerValidator.ValidateAsync(updateCustomerContract);

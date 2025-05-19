@@ -32,7 +32,7 @@ public class ReviewsController(
     }
 
     [HttpPost]
-    [Authorize]
+    [Authorize("CustomerOrDeveloper")]
     public async Task<IActionResult> Create([FromHeader(Name = "Authorization")] string token, [FromBody] CreateReviewContract create)
     {
         var validationResult = await _createReviewValidator.ValidateAsync(create);
@@ -44,7 +44,7 @@ public class ReviewsController(
     }
 
     [HttpPut("{id}")]
-    [Authorize]
+    [Authorize("CustomerOrDeveloperOrAdminWithManageReviews")]
     public async Task<IActionResult> Update([FromHeader(Name = "Authorization")] string token, [FromRoute] string id, [FromBody] UpdateReviewContract update)
     {
         var review = (await _reviewService.Get(id)).FirstOrDefault();
@@ -53,7 +53,7 @@ public class ReviewsController(
         var tokenArr = token.Split(" ");
         if (tokenArr.Length != 2) return BadRequest();
 
-        if (_authenticationService.GetId(tokenArr[1]) != review.UserId) return Unauthorized();
+        if (_authenticationService.GetId(tokenArr[1]) != review.UserId && _authenticationService.GetRole(tokenArr[1]) != "Admin") return Unauthorized();
 
         var validationResult = await _updateReviewValidator.ValidateAsync(update);
         if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
@@ -61,7 +61,7 @@ public class ReviewsController(
     }
 
     [HttpDelete("{id}")]
-    [Authorize]
+    [Authorize("CustomerOrDeveloperOrAdminWithManageReviews")]
     public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
     {
         var review = (await _reviewService.Get(id)).FirstOrDefault();
@@ -70,7 +70,7 @@ public class ReviewsController(
         var tokenArr = token.Split(" ");
         if (tokenArr.Length != 2) return BadRequest();
 
-        if (_authenticationService.GetId(tokenArr[1]) != review.UserId) return Unauthorized();
+        if (_authenticationService.GetId(tokenArr[1]) != review.UserId && _authenticationService.GetRole(tokenArr[1]) != "Admin") return Unauthorized();
 
         return Ok(await _reviewService.Delete(id, _userService, _gameService));
     }

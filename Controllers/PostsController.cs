@@ -32,7 +32,7 @@ public class PostsController(
     }
 
     [HttpGet("like")]
-    [Authorize]
+    [Authorize("CustomerOrDeveloper")]
     public async Task<IActionResult> GetLikes([FromHeader(Name = "Authorization")] string token)
     {
         var tokenArr = token.Split(" ");
@@ -79,7 +79,7 @@ public class PostsController(
     }
 
     [HttpPost("like/{id}")]
-    [Authorize]
+    [Authorize("CustomerOrDeveloper")]
     public async Task<IActionResult> Like([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
     {
         var post = (await _postService.Get(id)).FirstOrDefault();
@@ -93,7 +93,7 @@ public class PostsController(
     }
 
     [HttpPost("unlike/{id}")]
-    [Authorize]
+    [Authorize("CustomerOrDeveloper")]
     public async Task<IActionResult> Unlike([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
     {
         var post = (await _postService.Get(id)).FirstOrDefault();
@@ -107,7 +107,7 @@ public class PostsController(
     }
 
     [HttpPut("{id}")]
-    [Authorize("Developer")]
+    [Authorize("DeveloperOrAdminWithManagePosts")]
     public async Task<IActionResult> Update([FromHeader(Name = "Authorization")] string token, [FromRoute] string id, [FromBody] UpdatePostContract update)
     {
         var post = (await _postService.Get(id)).FirstOrDefault();
@@ -116,7 +116,7 @@ public class PostsController(
         var tokenArr = token.Split(" ");
         if (tokenArr.Length != 2) return BadRequest();
 
-        if (_authenticationService.GetId(tokenArr[1]) != post.UserId) return Forbid();
+        if (_authenticationService.GetId(tokenArr[1]) != post.UserId && _authenticationService.GetRole(tokenArr[1]) != "Admin") return Forbid();
 
         var validationResult = await _updatePostValidator.ValidateAsync(update);
         if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
@@ -124,7 +124,7 @@ public class PostsController(
     }
 
     [HttpDelete("{id}")]
-    [Authorize("Developer")]
+    [Authorize("DeveloperOrAdminWithManagePosts")]
     public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
     {
         var post = (await _postService.Get(id)).FirstOrDefault();
@@ -133,7 +133,7 @@ public class PostsController(
         var tokenArr = token.Split(" ");
         if (tokenArr.Length != 2) return BadRequest();
 
-        if (_authenticationService.GetId(tokenArr[1]) != post.UserId) return Forbid();
+        if (_authenticationService.GetId(tokenArr[1]) != post.UserId && _authenticationService.GetRole(tokenArr[1]) != "Admin") return Forbid();
 
         var filePath = Path.Combine(_imagePath, $"{id}.png");
         if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);

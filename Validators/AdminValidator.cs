@@ -11,8 +11,6 @@ public class CreateAdminValidator : AbstractValidator<CreateAdminContract>
         Include(new CreateUserValidator());
         RuleFor(x => x.CanManageAdmins)
             .NotNull().WithMessage("CanManageAdmins is required.");
-        RuleFor(x => x.CanManageUsers)
-            .NotNull().WithMessage("CanManageUsers is required.");
         RuleFor(x => x.CanManageGames)
             .NotNull().WithMessage("CanManageGames is required.");
         RuleFor(x => x.CanManagePosts)
@@ -32,10 +30,6 @@ public class UpdateAdminValidator : AbstractValidator<UpdateAdminContract>
         When(x => x.CanManageAdmins != null, () => {
             RuleFor(x => x.CanManageAdmins)
                 .NotNull().WithMessage("CanManageAdmins is required.");
-        });
-        When(x => x.CanManageUsers != null, () => {
-            RuleFor(x => x.CanManageUsers)
-                .NotNull().WithMessage("CanManageUsers is required.");
         });
         When(x => x.CanManageGames != null, () => {
             RuleFor(x => x.CanManageGames)

@@ -24,7 +24,7 @@ public class GenresController(
     }
 
     [HttpPost]
-    [Authorize("Admin")]
+    [Authorize("AdminWithManageGames")]
     public async Task<IActionResult> Create([FromBody] CreateGenreContract createGenreContract)
     {
         var validationResult = await _createGenreValidator.ValidateAsync(createGenreContract);
@@ -33,7 +33,7 @@ public class GenresController(
     }
 
     [HttpDelete("{id}")]
-    [Authorize("Admin")]
+    [Authorize("AdminWithManageGames")]
     public async Task<IActionResult> Delete([FromRoute] string id)
     {
         return Ok(await _genreService.Delete(id));

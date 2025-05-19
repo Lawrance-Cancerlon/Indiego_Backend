@@ -1,5 +1,6 @@
 using FluentValidation;
 using Indiego_Backend.Contracts;
+using Indiego_Backend.Models;
 using Indiego_Backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,7 @@ public class GamesController(
     IGameService gameService,
     IGenreService genreService,
     IReviewService reviewService,
+    ISubscriptionService subscriptionService,
     IUserService userService,
     IAuthenticationService authenticationService,
     IValidator<CreateGameContract> createGameValidator,
@@ -23,6 +25,7 @@ public class GamesController(
     private readonly IGenreService _genreService = genreService;
     private readonly IReviewService _reviewService = reviewService;
     private readonly IUserService _userService = userService;
+    private readonly ISubscriptionService _subscriptionService = subscriptionService;
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IValidator<CreateGameContract> _createGameValidator = createGameValidator;
     private readonly IValidator<UpdateGameContract> _updateGameValidator = updateGameValidator;
@@ -36,7 +39,7 @@ public class GamesController(
     }
 
     [HttpGet("favorites")]
-    [Authorize]
+    [Authorize("CustomerOrDeveloper")]
     public async Task<IActionResult> GetFavorites([FromHeader(Name = "Authorization")] string token)
     {
         var tokenArr = token.Split(" ");
@@ -59,6 +62,7 @@ public class GamesController(
         var filePath = Path.Combine(_gamePath, $"{id}.zip");
         if (!System.IO.File.Exists(filePath)) return NotFound();
         
+        await _subscriptionService.AddDownload(tokenArr[1], id, _userService, _gameService);
         await _gameService.Download(id, tokenArr[1], _userService);
         var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
         return File(fileStream, "application/zip", $"{game.Name}.zip");
@@ -133,7 +137,7 @@ public class GamesController(
     }
 
     [HttpPost("favorite/{id}")]
-    [Authorize]
+    [Authorize("CustomerOrDeveloper")]
     public async Task<IActionResult> Favorite([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
     {
         var game = (await _gameService.Get(id)).FirstOrDefault();
@@ -150,7 +154,7 @@ public class GamesController(
     }
 
     [HttpPost("unfavorite/{id}")]
-    [Authorize]
+    [Authorize("CustomerOrDeveloper")]
     public async Task<IActionResult> Unfavorite([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
     {
         var game = (await _gameService.Get(id)).FirstOrDefault();
@@ -167,7 +171,7 @@ public class GamesController(
     }
 
     [HttpPut("{id}")]
-    [Authorize("Developer")]
+    [Authorize("DeveloperOrAdminWithManageGames")]
     public async Task<IActionResult> Update([FromHeader(Name = "Authorization")] string token, [FromRoute] string id, [FromBody] UpdateGameContract update)
     {
         var game = (await _gameService.Get(id)).FirstOrDefault();
@@ -176,7 +180,7 @@ public class GamesController(
         var tokenArr = token.Split(" ");
         if (tokenArr.Length != 2) return BadRequest();
 
-        if (_authenticationService.GetId(tokenArr[1]) != game.UserId) return Forbid();
+        if (_authenticationService.GetId(tokenArr[1]) != game.UserId && _authenticationService.GetRole(tokenArr[1]) != "Admin") return Forbid();
         
         var validationResult = await _updateGameValidator.ValidateAsync(update);
         if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
@@ -184,7 +188,7 @@ public class GamesController(
     }
 
     [HttpDelete("{id}")]
-    [Authorize("Developer")]
+    [Authorize("DeveloperOrAdminWithManageGames")]
     public async Task<IActionResult> Delete([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
     {
         var game = (await _gameService.Get(id)).FirstOrDefault();
@@ -193,7 +197,7 @@ public class GamesController(
         var tokenArr = token.Split(" ");
         if (tokenArr.Length != 2) return BadRequest();
 
-        if (_authenticationService.GetId(tokenArr[1]) != game.UserId) return Forbid();
+        if (_authenticationService.GetId(tokenArr[1]) != game.UserId && _authenticationService.GetRole(tokenArr[1]) != "Admin") return Forbid();
 
         var filePath = Path.Combine(_gamePath, $"{id}.zip");
         if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
