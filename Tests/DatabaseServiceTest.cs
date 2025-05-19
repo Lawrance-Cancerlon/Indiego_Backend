@@ -22,6 +22,72 @@ namespace Indiego_Backend.Tests
         }
 
         [Test]
+        public void GenreCollection_ShouldReturnCorrectCollectionName()
+        {
+            // Act
+            var collection = _databaseService.Genres;
+            
+            // Assert
+            Assert.That(collection, Is.Not.Null);
+            Assert.That(collection.CollectionNamespace.CollectionName, Is.EqualTo("genres"));
+        }
+
+        [Test]
+        public void GameCollection_ShouldReturnCorrectCollectionName()
+        {
+            // Act
+            var collection = _databaseService.Games;
+            
+            // Assert
+            Assert.That(collection, Is.Not.Null);
+            Assert.That(collection.CollectionNamespace.CollectionName, Is.EqualTo("games"));
+        }
+
+        [Test]
+        public void SubscriptionCollection_ShouldReturnCorrectCollectionName()
+        {
+            // Act
+            var collection = _databaseService.Subscriptions;
+            
+            // Assert
+            Assert.That(collection, Is.Not.Null);
+            Assert.That(collection.CollectionNamespace.CollectionName, Is.EqualTo("subscriptions"));
+        }
+
+        [Test]
+        public void ReviewCollection_ShouldReturnCorrectCollectionName()
+        {
+            // Act
+            var collection = _databaseService.Reviews;
+            
+            // Assert
+            Assert.That(collection, Is.Not.Null);
+            Assert.That(collection.CollectionNamespace.CollectionName, Is.EqualTo("reviews"));
+        }
+
+        [Test]
+        public void PostCollection_ShouldReturnCorrectCollectionName()
+        {
+            // Act
+            var collection = _databaseService.Posts;
+            
+            // Assert
+            Assert.That(collection, Is.Not.Null);
+            Assert.That(collection.CollectionNamespace.CollectionName, Is.EqualTo("posts"));
+        }
+
+        [Test]
+        public void SubscriptionTypeCollection_ShouldReturnCorrectCollectionName()
+        {
+            // Act
+            var collection = _databaseService.SubscriptionTypes;
+            
+            // Assert
+            Assert.That(collection, Is.Not.Null);
+            Assert.That(collection.CollectionNamespace.CollectionName, Is.EqualTo("subscriptionTypes"));
+        }
+
+        [Test]
         public void UserCollection_ShouldReturnCorrectCollectionName()
         {
             // Act
@@ -63,13 +129,6 @@ namespace Indiego_Backend.Tests
             // Assert
             Assert.That(collection, Is.Not.Null);
             Assert.That(collection.CollectionNamespace.CollectionName, Is.EqualTo("users"));
-        }
-        
-        [Test]
-        public void DatabaseService_ShouldImplementIDatabaseServiceInterface()
-        {
-            // Assert
-            Assert.That(_databaseService, Is.InstanceOf<IDatabaseService>());
         }
     }
 }

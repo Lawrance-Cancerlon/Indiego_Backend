@@ -10,7 +10,6 @@ using NUnit.Framework;
 
 namespace Indiego_Backend.Tests
 {
-    [TestFixture]
     public class UserControllerTest
     {
         private UsersController _controller = null!;
@@ -149,6 +148,24 @@ namespace Indiego_Backend.Tests
         }
 
         [Test]
+        public async Task Get_ReturnsEmptyArray_WhenNoUsersFound()
+        {
+            // Arrange
+            var emptyList = new List<UserContract>();
+            _mockUserService.Setup(s => s.Get<UserContract, User>(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(emptyList);
+
+            // Act
+            var result = await _controller.Get("1") as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo(200));
+            Assert.That(result.Value, Is.EqualTo(emptyList));
+            Assert.That((result.Value as List<UserContract>)?.Count, Is.EqualTo(0));
+        }
+
+        [Test]
         public async Task GetDeveloper_ReturnsOk()
         {
             // Arrange
@@ -165,6 +182,25 @@ namespace Indiego_Backend.Tests
             Assert.That(result!.StatusCode, Is.EqualTo(200));
             Assert.That(result.Value, Is.EqualTo(developerContractsList));
         }
+
+        [Test]
+        public async Task GetDeveloper_ReturnsEmptyArray_WhenNoUsersFound()
+        {
+            // Arrange
+            var emptyList = new List<DeveloperContract>();
+            _mockUserService.Setup(s => s.Get<DeveloperContract, Developer>(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(emptyList);
+
+            // Act
+            var result = await _controller.GetDeveloper("1") as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo(200));
+            Assert.That(result.Value, Is.EqualTo(emptyList));
+            Assert.That((result.Value as List<DeveloperContract>)?.Count, Is.EqualTo(0));
+        }
+
         [Test]
         public async Task GetAdmin_ReturnsOk()
         {
@@ -181,6 +217,24 @@ namespace Indiego_Backend.Tests
             Assert.That(result, Is.Not.Null);
             Assert.That(result!.StatusCode, Is.EqualTo(200));
             Assert.That(result.Value, Is.EqualTo(adminContractsList));
+        }
+
+        [Test]
+        public async Task GetAdmin_ReturnsEmptyArray_WhenNoAdminsFound()
+        {
+            // Arrange
+            var emptyList = new List<AdminContract>();
+            _mockUserService.Setup(s => s.Get<AdminContract, Admin>(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(emptyList);
+
+            // Act
+            var result = await _controller.GetAdmin("1") as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo(200));
+            Assert.That(result.Value, Is.EqualTo(emptyList));
+            Assert.That((result.Value as List<AdminContract>)?.Count, Is.EqualTo(0));
         }
 
         [Test]
@@ -335,6 +389,108 @@ namespace Indiego_Backend.Tests
             Assert.That(result, Is.Not.Null);
             Assert.That(result!.StatusCode, Is.EqualTo(400));
             Assert.That(result.Value, Is.EqualTo(validationFailures));
+        }
+
+        [Test]
+        public async Task Withdraw_WithValidTokenAndSufficientBalance_ReturnsOk()
+        {
+            // Arrange
+            var token = "Bearer testToken";
+            var userId = "userId";
+            var amount = 100;
+            var developerContract = new DeveloperContract { Balance = 500 };
+            var developerContractsList = new List<DeveloperContract> { developerContract };
+
+            _mockAuthService.Setup(s => s.GetId("testToken")).Returns(userId);
+            _mockUserService.Setup(s => s.Get<DeveloperContract, Developer>(userId, null))
+                .ReturnsAsync(developerContractsList);
+            _mockUserService.Setup(s => s.RemoveBalance(userId, amount)).Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _controller.Withdraw(token, amount) as OkObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo(200));
+            Assert.That((result.Value as dynamic)?.message, Is.EqualTo("Withdraw balance successful"));
+            _mockUserService.Verify(s => s.RemoveBalance(userId, amount), Times.Once);
+        }
+
+        [Test]
+        public async Task Withdraw_WithInvalidToken_ReturnsBadRequest()
+        {
+            // Arrange
+            var token = "InvalidToken";
+            var amount = 100;
+
+            // Act
+            var result = await _controller.Withdraw(token, amount);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<BadRequestResult>());
+            _mockUserService.Verify(s => s.RemoveBalance(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+        }
+
+        [Test]
+        public async Task Withdraw_WithNullUserId_ReturnsBadRequest()
+        {
+            // Arrange
+            var token = "Bearer testToken";
+            var amount = 100;
+
+            _mockAuthService.Setup(s => s.GetId("testToken")).Returns((string?)null);
+
+            // Act
+            var result = await _controller.Withdraw(token, amount);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<BadRequestResult>());
+            _mockUserService.Verify(s => s.RemoveBalance(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+        }
+
+        [Test]
+        public async Task Withdraw_WithNonExistentUser_ReturnsBadRequest()
+        {
+            // Arrange
+            var token = "Bearer testToken";
+            var userId = "userId";
+            var amount = 100;
+            var emptyList = new List<DeveloperContract>();
+
+            _mockAuthService.Setup(s => s.GetId("testToken")).Returns(userId);
+            _mockUserService.Setup(s => s.Get<DeveloperContract, Developer>(userId, null))
+                .ReturnsAsync(emptyList);
+
+            // Act
+            var result = await _controller.Withdraw(token, amount);
+
+            // Assert
+            Assert.That(result, Is.InstanceOf<BadRequestResult>());
+            _mockUserService.Verify(s => s.RemoveBalance(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
+        }
+
+        [Test]
+        public async Task Withdraw_WithInsufficientBalance_ReturnsBadRequestWithMessage()
+        {
+            // Arrange
+            var token = "Bearer testToken";
+            var userId = "userId";
+            var amount = 200;
+            var developerContract = new DeveloperContract { Balance = 100 };
+            var developerContractsList = new List<DeveloperContract> { developerContract };
+
+            _mockAuthService.Setup(s => s.GetId("testToken")).Returns(userId);
+            _mockUserService.Setup(s => s.Get<DeveloperContract, Developer>(userId, null))
+                .ReturnsAsync(developerContractsList);
+
+            // Act
+            var result = await _controller.Withdraw(token, amount) as BadRequestObjectResult;
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo(400));
+            Assert.That(result.Value, Is.EqualTo("Not enough balance"));
+            _mockUserService.Verify(s => s.RemoveBalance(It.IsAny<string>(), It.IsAny<int>()), Times.Never);
         }
 
         [Test]

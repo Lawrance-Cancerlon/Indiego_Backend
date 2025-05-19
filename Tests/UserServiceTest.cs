@@ -142,23 +142,23 @@ namespace Indiego_Backend.Tests
         public async Task Create_WithValidData_ReturnsCreatedUser()
         {
             // Arrange
-            var createContract = new CreateUserContract 
-            { 
-            Email = "new@example.com", 
-            Password = "password123", 
-            Name = "New User" 
+            var createContract = new CreateUserContract
+            {
+                Email = "new@example.com",
+                Password = "password123",
+                Name = "New User"
             };
-            var customer = new Customer 
-            { 
-            Id = "newUserId", 
-            Email = "new@example.com", 
-            Name = "New User" 
+            var customer = new Customer
+            {
+                Id = "newUserId",
+                Email = "new@example.com",
+                Name = "New User"
             };
-            var customerContract = new CustomerContract 
-            { 
-            Id = "newUserId", 
-            Email = "new@example.com", 
-            Name = "New User" 
+            var customerContract = new CustomerContract
+            {
+                Id = "newUserId",
+                Email = "new@example.com",
+                Name = "New User"
             };
 
             _mockMapper.Setup(m => m.Map<Customer>(createContract)).Returns(customer);
@@ -200,7 +200,7 @@ namespace Indiego_Backend.Tests
         {
             // Arrange
             var userId = "nonExistentId";
-            
+
             _mockCustomerRepository.Setup(r => r.Get(userId, null)).ReturnsAsync(new List<Customer>());
             _mockMapper.Setup(m => m.Map<List<CustomerContract>>(It.IsAny<List<Customer>>())).Returns(new List<CustomerContract>());
 
@@ -236,12 +236,51 @@ namespace Indiego_Backend.Tests
         {
             // Arrange
             var email = "nonexistent@example.com";
-            
+
             _mockCustomerRepository.Setup(r => r.Get(null, email)).ReturnsAsync(new List<Customer>());
             _mockMapper.Setup(m => m.Map<List<CustomerContract>>(It.IsAny<List<Customer>>())).Returns(new List<CustomerContract>());
 
             // Act
             var result = await _userService.Get<CustomerContract, Customer>(null, email);
+
+            // Assert
+            Assert.That(result, Is.Empty);
+        }
+
+        [Test]
+        public async Task Get_WithIdAndEmail_ReturnsMatchingUser()
+        {
+            // Arrange
+            var userId = "userId";
+            var email = "test@example.com";
+            var customer = new Customer { Id = userId, Email = email };
+            var customerContract = new CustomerContract { Id = userId, Email = email };
+
+            _mockCustomerRepository.Setup(r => r.Get(userId, email)).ReturnsAsync([customer]);
+            _mockMapper.Setup(m => m.Map<List<CustomerContract>>(It.IsAny<List<Customer>>())).Returns([customerContract]);
+
+            // Act
+            var result = await _userService.Get<CustomerContract, Customer>(userId, email);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(1));
+            Assert.That(result[0].Id, Is.EqualTo(userId));
+            Assert.That(result[0].Email, Is.EqualTo(email));
+        }
+
+        [Test]
+        public async Task Get_WithInvalidIdAndEmail_ReturnsEmptyList()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var email = "nonexistent@example.com";
+
+            _mockCustomerRepository.Setup(r => r.Get(userId, email)).ReturnsAsync(new List<Customer>());
+            _mockMapper.Setup(m => m.Map<List<CustomerContract>>(It.IsAny<List<Customer>>())).Returns(new List<CustomerContract>());
+
+            // Act
+            var result = await _userService.Get<CustomerContract, Customer>(userId, email);
 
             // Assert
             Assert.That(result, Is.Empty);
@@ -330,12 +369,12 @@ namespace Indiego_Backend.Tests
             // Arrange
             var token = "valid-token";
             var userId = "userId";
-            var customer = new Customer 
-            { 
-                Id = userId, 
-                Name = "Test User", 
+            var customer = new Customer
+            {
+                Id = userId,
+                Name = "Test User",
                 Email = "test@example.com",
-                Password = "hashedPassword" 
+                Password = "hashedPassword"
             };
             var developer = new Developer
             {
@@ -386,6 +425,680 @@ namespace Indiego_Backend.Tests
             Assert.That(result, Is.Null);
             _mockCustomerRepository.Verify(repo => repo.Delete(It.IsAny<string>()), Times.Never);
             _mockDeveloperRepository.Verify(repo => repo.Create(It.IsAny<Developer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task AddReview_ValidUser_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var reviewId = "reviewId";
+            var customer = new Customer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                ReviewIds = []
+            };
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([customer]);
+            _mockCustomerRepository.Setup(repo => repo.Update(userId, It.IsAny<Customer>()))
+                .ReturnsAsync(customer);
+
+            // Act
+            await _userService.AddReview(userId, reviewId);
+
+            // Assert
+            Assert.That(customer.ReviewIds, Does.Contain(reviewId));
+            _mockCustomerRepository.Verify(repo => repo.Update(userId, It.IsAny<Customer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task AddReview_InvalidUser_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var reviewId = "reviewId";
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.AddReview(userId, reviewId);
+
+            // Assert
+            _mockCustomerRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Customer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task RemoveReview_ValidUser_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var reviewId = "reviewId";
+            var customer = new Customer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                ReviewIds = [reviewId]
+            };
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([customer]);
+            _mockCustomerRepository.Setup(repo => repo.Update(userId, It.IsAny<Customer>()))
+                .ReturnsAsync(customer);
+
+            // Act
+            await _userService.RemoveReview(userId, reviewId);
+
+            // Assert
+            Assert.That(customer.ReviewIds, Does.Not.Contain(reviewId));
+            _mockCustomerRepository.Verify(repo => repo.Update(userId, It.IsAny<Customer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task RemoveReview_InvalidUser_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var reviewId = "reviewId";
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.RemoveReview(userId, reviewId);
+
+            // Assert
+            _mockCustomerRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Customer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task AddLike_ValidUser_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var postId = "postId";
+            var customer = new Customer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                Likes = []
+            };
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([customer]);
+            _mockCustomerRepository.Setup(repo => repo.Update(userId, It.IsAny<Customer>()))
+                .ReturnsAsync(customer);
+
+            // Act
+            await _userService.AddLike(userId, postId);
+
+            // Assert
+            Assert.That(customer.Likes, Does.Contain(postId));
+            _mockCustomerRepository.Verify(repo => repo.Update(userId, It.IsAny<Customer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task AddLike_InvalidUser_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var postId = "postId";
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.AddLike(userId, postId);
+
+            // Assert
+            _mockCustomerRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Customer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task RemoveLike_ValidUser_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var postId = "postId";
+            var customer = new Customer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                Likes = [postId]
+            };
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([customer]);
+            _mockCustomerRepository.Setup(repo => repo.Update(userId, It.IsAny<Customer>()))
+                .ReturnsAsync(customer);
+
+            // Act
+            await _userService.RemoveLike(userId, postId);
+
+            // Assert
+            Assert.That(customer.Likes, Does.Not.Contain(postId));
+            _mockCustomerRepository.Verify(repo => repo.Update(userId, It.IsAny<Customer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task RemoveLike_InvalidUser_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var postId = "postId";
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.RemoveLike(userId, postId);
+
+            // Assert
+            _mockCustomerRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Customer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task AddFavorite_ValidUser_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var gameId = "gameId";
+            var customer = new Customer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                Favorites = []
+            };
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([customer]);
+            _mockCustomerRepository.Setup(repo => repo.Update(userId, It.IsAny<Customer>()))
+                .ReturnsAsync(customer);
+
+            // Act
+            await _userService.AddFavorite(userId, gameId);
+
+            // Assert
+            Assert.That(customer.Favorites, Does.Contain(gameId));
+            _mockCustomerRepository.Verify(repo => repo.Update(userId, It.IsAny<Customer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task AddFavorite_InvalidUser_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var gameId = "gameId";
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.AddFavorite(userId, gameId);
+
+            // Assert
+            _mockCustomerRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Customer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task RemoveFavorite_ValidUser_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var gameId = "gameId";
+            var customer = new Customer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                Favorites = [gameId]
+            };
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([customer]);
+            _mockCustomerRepository.Setup(repo => repo.Update(userId, It.IsAny<Customer>()))
+                .ReturnsAsync(customer);
+
+            // Act
+            await _userService.RemoveFavorite(userId, gameId);
+
+            // Assert
+            Assert.That(customer.Favorites, Does.Not.Contain(gameId));
+            _mockCustomerRepository.Verify(repo => repo.Update(userId, It.IsAny<Customer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task RemoveFavorite_InvalidUser_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var gameId = "gameId";
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.RemoveFavorite(userId, gameId);
+
+            // Assert
+            _mockCustomerRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Customer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task Download_ValidUser_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var gameId = "gameId";
+            var customer = new Customer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                Downloads = []
+            };
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([customer]);
+            _mockCustomerRepository.Setup(repo => repo.Update(userId, It.IsAny<Customer>()))
+                .ReturnsAsync(customer);
+
+            // Act
+            await _userService.Download(userId, gameId);
+
+            // Assert
+            Assert.That(customer.Downloads.Any(d => d.UserId == userId && d.GameId == gameId), Is.True);
+            _mockCustomerRepository.Verify(repo => repo.Update(userId, It.IsAny<Customer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task Download_InvalidUser_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var gameId = "gameId";
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.Download(userId, gameId);
+
+            // Assert
+            _mockCustomerRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Customer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task AddGame_ValidDeveloper_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var gameId = "gameId";
+            var developer = new Developer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                GameIds = []
+            };
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([developer]);
+            _mockDeveloperRepository.Setup(repo => repo.Update(userId, It.IsAny<Developer>()))
+                .ReturnsAsync(developer);
+
+            // Act
+            await _userService.AddGame(userId, gameId);
+
+            // Assert
+            Assert.That(developer.GameIds, Does.Contain(gameId));
+            _mockDeveloperRepository.Verify(repo => repo.Update(userId, It.IsAny<Developer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task AddGame_InvalidDeveloper_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var gameId = "gameId";
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.AddGame(userId, gameId);
+
+            // Assert
+            _mockDeveloperRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Developer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task RemoveGame_ValidDeveloper_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var gameId = "gameId";
+            var developer = new Developer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                GameIds = [gameId]
+            };
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([developer]);
+            _mockDeveloperRepository.Setup(repo => repo.Update(userId, It.IsAny<Developer>()))
+                .ReturnsAsync(developer);
+
+            // Act
+            await _userService.RemoveGame(userId, gameId);
+
+            // Assert
+            Assert.That(developer.GameIds, Does.Not.Contain(gameId));
+            _mockDeveloperRepository.Verify(repo => repo.Update(userId, It.IsAny<Developer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task RemoveGame_InvalidDeveloper_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var gameId = "gameId";
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.RemoveGame(userId, gameId);
+
+            // Assert
+            _mockDeveloperRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Developer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task AddPost_ValidDeveloper_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var postId = "postId";
+            var developer = new Developer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                PostIds = []
+            };
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([developer]);
+            _mockDeveloperRepository.Setup(repo => repo.Update(userId, It.IsAny<Developer>()))
+                .ReturnsAsync(developer);
+
+            // Act
+            await _userService.AddPost(userId, postId);
+
+            // Assert
+            Assert.That(developer.PostIds, Does.Contain(postId));
+            _mockDeveloperRepository.Verify(repo => repo.Update(userId, It.IsAny<Developer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task AddPost_InvalidDeveloper_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var postId = "postId";
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.AddPost(userId, postId);
+
+            // Assert
+            _mockDeveloperRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Developer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task RemovePost_ValidDeveloper_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var postId = "postId";
+            var developer = new Developer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                PostIds = [postId]
+            };
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([developer]);
+            _mockDeveloperRepository.Setup(repo => repo.Update(userId, It.IsAny<Developer>()))
+                .ReturnsAsync(developer);
+
+            // Act
+            await _userService.RemovePost(userId, postId);
+
+            // Assert
+            Assert.That(developer.PostIds, Does.Not.Contain(postId));
+            _mockDeveloperRepository.Verify(repo => repo.Update(userId, It.IsAny<Developer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task RemovePost_InvalidDeveloper_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var postId = "postId";
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.RemovePost(userId, postId);
+
+            // Assert
+            _mockDeveloperRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Developer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task AddBalance_ValidDeveloper_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var initialBalance = 100;
+            var amountToAdd = 50;
+            var developer = new Developer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                Balance = initialBalance
+            };
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([developer]);
+            _mockDeveloperRepository.Setup(repo => repo.Update(userId, It.IsAny<Developer>()))
+                .ReturnsAsync(developer);
+
+            // Act
+            await _userService.AddBalance(userId, amountToAdd);
+
+            // Assert
+            Assert.That(developer.Balance, Is.EqualTo(initialBalance + amountToAdd));
+            _mockDeveloperRepository.Verify(repo => repo.Update(userId, It.IsAny<Developer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task AddBalance_InvalidDeveloper_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var amountToAdd = 50;
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.AddBalance(userId, amountToAdd);
+
+            // Assert
+            _mockDeveloperRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Developer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task RemoveBalance_ValidDeveloper_CallsRepositoryUpdate()
+        {
+            // Arrange
+            var userId = "userId";
+            var initialBalance = 100;
+            var amountToRemove = 50;
+            var developer = new Developer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                Balance = initialBalance
+            };
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([developer]);
+            _mockDeveloperRepository.Setup(repo => repo.Update(userId, It.IsAny<Developer>()))
+                .ReturnsAsync(developer);
+
+            // Act
+            await _userService.RemoveBalance(userId, amountToRemove);
+
+            // Assert
+            Assert.That(developer.Balance, Is.EqualTo(initialBalance - amountToRemove));
+            _mockDeveloperRepository.Verify(repo => repo.Update(userId, It.IsAny<Developer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task RemoveBalance_InvalidDeveloper_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var amountToRemove = 50;
+
+            _mockDeveloperRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.RemoveBalance(userId, amountToRemove);
+
+            // Assert
+            _mockDeveloperRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Developer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task Subscribe_ValidCustomer_SetsSubscriptionId()
+        {
+            // Arrange
+            var userId = "userId";
+            var subscriptionId = "subscriptionId";
+            var customer = new Customer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                SubscriptionId = null
+            };
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([customer]);
+            _mockCustomerRepository.Setup(repo => repo.Update(userId, It.IsAny<Customer>()))
+                .ReturnsAsync(customer);
+
+            // Act
+            await _userService.Subscribe(userId, subscriptionId);
+
+            // Assert
+            Assert.That(customer.SubscriptionId, Is.EqualTo(subscriptionId));
+            _mockCustomerRepository.Verify(repo => repo.Update(userId, It.IsAny<Customer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task Subscribe_InvalidCustomer_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+            var subscriptionId = "subscriptionId";
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.Subscribe(userId, subscriptionId);
+
+            // Assert
+            _mockCustomerRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Customer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task Unsubscribe_ValidCustomer_RemovesSubscriptionId()
+        {
+            // Arrange
+            var userId = "userId";
+            var subscriptionId = "subscriptionId";
+            var customer = new Customer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                SubscriptionId = subscriptionId
+            };
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([customer]);
+            _mockCustomerRepository.Setup(repo => repo.Update(userId, It.IsAny<Customer>()))
+                .ReturnsAsync(customer);
+
+            // Act
+            await _userService.Unsubscribe(userId);
+
+            // Assert
+            Assert.That(customer.SubscriptionId, Is.Null);
+            _mockCustomerRepository.Verify(repo => repo.Update(userId, It.IsAny<Customer>()), Times.Once);
+        }
+
+        [Test]
+        public async Task Unsubscribe_InvalidCustomer_DoesNotCallUpdate()
+        {
+            // Arrange
+            var userId = "nonExistentId";
+
+            _mockCustomerRepository.Setup(repo => repo.Get(userId, null))
+                .ReturnsAsync([]);
+
+            // Act
+            await _userService.Unsubscribe(userId);
+
+            // Assert
+            _mockCustomerRepository.Verify(repo => repo.Update(It.IsAny<string>(), It.IsAny<Customer>()), Times.Never);
+        }
+
+        [Test]
+        public async Task Delete_Developer_CleansUpGamesAndPosts()
+        {
+            // Arrange
+            var userId = "userId";
+            var gameId = "gameId";
+            var postId = "postId";
+            var developer = new Developer
+            {
+                Id = userId,
+                Email = "test@example.com",
+                GameIds = [gameId],
+                PostIds = [postId]
+            };
+
+            _mockDeveloperRepository.Setup(r => r.Delete(userId)).ReturnsAsync(developer);
+            _mockMapper.Setup(m => m.Map<DeveloperContract>(developer)).Returns(new DeveloperContract { Id = userId });
+
+            // Act
+            var result = await _userService.Delete<DeveloperContract, Developer>(userId);
+
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.Id, Is.EqualTo(userId));
+            _mockGameService.Verify(s => s.Delete(gameId, _mockGenreService.Object, _mockReviewService.Object, _userService), Times.Once);
+            _mockPostService.Verify(s => s.Delete(postId, _userService), Times.Once);
         }
     }
 }

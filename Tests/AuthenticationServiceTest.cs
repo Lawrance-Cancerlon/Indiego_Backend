@@ -80,6 +80,39 @@ namespace Indiego_Backend.Tests
         }
 
         [Test]
+        public void GenerateToken_ForAdmin_ContainsCorrectClaims()
+        {
+            // Arrange
+            var admin = new Admin
+            {
+                Id = "admin123",
+                CanManageAdmins = true,
+                CanManageGames = false,
+                CanManagePosts = true,
+                CanManageReviews = false,
+                CanManageSubscriptions = true
+            };
+
+            // Act
+            var token = _authService.GenerateToken(admin);
+
+            // Assert
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var jwtToken = tokenHandler.ReadJwtToken(token);
+            
+            Assert.Multiple(() =>
+            {
+                Assert.That(jwtToken.Claims.First(c => c.Type == "nameid").Value, Is.EqualTo("admin123"));
+                Assert.That(jwtToken.Claims.First(c => c.Type == "role").Value, Is.EqualTo("Admin"));
+                Assert.That(jwtToken.Claims.Any(c => c.Type == "CanManageAdmins" && c.Value == "true"), Is.True);
+                Assert.That(jwtToken.Claims.Any(c => c.Type == "CanManageGames" && c.Value == "true"), Is.False);
+                Assert.That(jwtToken.Claims.Any(c => c.Type == "CanManagePosts" && c.Value == "true"), Is.True);
+                Assert.That(jwtToken.Claims.Any(c => c.Type == "CanManageReviews" && c.Value == "true"), Is.False);
+                Assert.That(jwtToken.Claims.Any(c => c.Type == "CanManageSubscriptions" && c.Value == "true"), Is.True);
+            });
+        }
+
+        [Test]
         public void GetId_ValidToken_ReturnsUserId()
         {
             // Arrange
@@ -94,6 +127,19 @@ namespace Indiego_Backend.Tests
         }
 
         [Test]
+        public void GetId_InvalidToken_ReturnsNull()
+        {
+            // Arrange
+            var invalidToken = "invalid.jwt.token";
+
+            // Act
+            var userId = _authService.GetId(invalidToken);
+
+            // Assert
+            Assert.That(userId, Is.Null);
+        }
+
+        [Test]
         public void GetRole_ValidToken_ReturnsRole()
         {
             // Arrange
@@ -105,6 +151,19 @@ namespace Indiego_Backend.Tests
 
             // Assert
             Assert.That(role, Is.EqualTo("Developer"));
+        }
+
+        [Test]
+        public void GetRole_InvalidToken_ReturnsNull()
+        {
+            // Arrange
+            var invalidToken = "invalid.jwt.token";
+
+            // Act
+            var role = _authService.GetRole(invalidToken);
+
+            // Assert
+            Assert.That(role, Is.Null);
         }
 
         [Test]
