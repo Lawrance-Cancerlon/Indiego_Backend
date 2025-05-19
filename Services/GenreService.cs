@@ -15,9 +15,10 @@ public interface IGenreService
     Task RemoveGame(string genreId, string gameId);
 }
 
-public class GenreService(IGenreRepository repository, IMapper mapper) : IGenreService
+public class GenreService(IGenreRepository repository, IGameService gameService, IMapper mapper) : IGenreService
 {
     private readonly IGenreRepository _repository = repository;
+    private readonly IGameService _gameService = gameService;
     private readonly IMapper _mapper = mapper;
 
     public async Task<List<GenreContract>> Get(string? id = null, string? gameId = null)
@@ -34,6 +35,8 @@ public class GenreService(IGenreRepository repository, IMapper mapper) : IGenreS
     public async Task<GenreContract?> Delete(string id)
     {
         var genre = await _repository.Delete(id);
+        if (genre == null) return null;
+        foreach (var game in genre.GameIds) await _gameService.RemoveGenre(game, id);
         return _mapper.Map<GenreContract>(genre);
     }
 

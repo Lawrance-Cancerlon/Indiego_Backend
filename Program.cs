@@ -93,9 +93,13 @@ builder.Services.AddSingleton<IValidator<CreateCustomerContract>, CreateCustomer
 builder.Services.AddSingleton<IValidator<UpdateCustomerContract>, UpdateCustomerValidator>();
 
 //Services
-builder.Services.AddSingleton<IUserService, UserService>();
-builder.Services.AddSingleton<IGenreService, GenreService>();
 builder.Services.AddSingleton<IGameService, GameService>();
+builder.Services.AddSingleton<IGenreService, GenreService>();
+builder.Services.AddSingleton<IPostService, PostService>();
+builder.Services.AddSingleton<IReviewService, ReviewService>();
+builder.Services.AddSingleton<ISubscriptionService, SubscriptionService>();
+builder.Services.AddSingleton<ISubscriptionTypeService, SubscriptionTypeService>();
+builder.Services.AddSingleton<IUserService, UserService>();
 
 builder.Services.AddControllers();
 

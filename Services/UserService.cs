@@ -35,21 +35,21 @@ public interface IUserService
         where TResponse : UserContract
         where TEntity : User;
     Task<DeveloperContract?> ConvertCustomerToDeveloper(string token);
-    Task AddReview(string token, string reviewId);
-    Task RemoveReview(string token, string reviewId);
-    Task AddLike(string token, string postId);
-    Task RemoveLike(string token, string postId);
-    Task AddFavorite(string token, string gameId);
-    Task RemoveFavorite(string token, string gameId);
-    Task Download(string token, string gameId);
-    Task AddGame(string token, string gameId);
-    Task RemoveGame(string token, string gameId);
-    Task AddPost(string token, string postId);
-    Task RemovePost(string token, string postId);
-    Task AddBalance(string token, int amount);
-    Task RemoveBalance(string token, int amount);
-    Task Subscribe(string token, string subscriptionId);
-    Task Unsubscribe(string token);
+    Task AddReview(string id, string reviewId);
+    Task RemoveReview(string id, string reviewId);
+    Task AddLike(string id, string postId);
+    Task RemoveLike(string id, string postId);
+    Task AddFavorite(string id, string gameId);
+    Task RemoveFavorite(string id, string gameId);
+    Task Download(string id, string gameId);
+    Task AddGame(string id, string gameId);
+    Task RemoveGame(string id, string gameId);
+    Task AddPost(string id, string postId);
+    Task RemovePost(string id, string postId);
+    Task AddBalance(string id, int amount);
+    Task RemoveBalance(string id, int amount);
+    Task Subscribe(string id, string subscriptionId);
+    Task Unsubscribe(string id);
 }
 
 public class UserService(
@@ -57,6 +57,8 @@ public class UserService(
     IUserRepository<Admin> adminRepository,
     IUserRepository<Customer> customerRepository,
     IUserRepository<Developer> developerRepository,
+    IGameService gameService,
+    IPostService postService,
     IAuthenticationService authenticationService,
     IMapper mapper
 ) : IUserService
@@ -65,6 +67,8 @@ public class UserService(
     private readonly IUserRepository<Admin> _adminRepository = adminRepository;
     private readonly IUserRepository<Customer> _customerRepository = customerRepository;
     private readonly IUserRepository<Developer> _developerRepository = developerRepository;
+    private readonly IGameService _gameService = gameService;
+    private readonly IPostService _postService = postService;
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IMapper _mapper = mapper;
 
@@ -170,6 +174,12 @@ public class UserService(
         else
             repository = (IUserRepository<TEntity>)_userRepository;
         var user = await repository.Delete(id);
+        if (user != null && typeof(TEntity) == typeof(Developer))
+        {
+            var developer = (Developer)(object)user;
+            foreach (var game in developer.GameIds) await _gameService.Delete(game);
+            foreach (var post in developer.PostIds) await _postService.Delete(post);
+        }
         return _mapper.Map<TResponse>(user);
     }
 
@@ -199,188 +209,143 @@ public class UserService(
         return _mapper.Map<DeveloperContract>(developer);
     }
 
-    public async Task AddReview(string token, string reviewId)
+    public async Task AddReview(string id, string reviewId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
+        var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
         if(!customer.ReviewIds.Contains(reviewId)) customer.ReviewIds.Add(reviewId);
-        await _customerRepository.Update(userId, customer);
+        await _customerRepository.Update(id, customer);
     }
 
-    public async Task RemoveReview(string token, string reviewId)
+    public async Task RemoveReview(string id, string reviewId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
+        var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
         customer.ReviewIds.Remove(reviewId);
-        await _customerRepository.Update(userId, customer);
+        await _customerRepository.Update(id, customer);
     }
 
-    public async Task AddLike(string token, string postId)
+    public async Task AddLike(string id, string postId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
+        var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
         if(!customer.Likes.Contains(postId)) customer.Likes.Add(postId);
-        await _customerRepository.Update(userId, customer);
+        await _customerRepository.Update(id, customer);
     }
 
-    public async Task RemoveLike(string token, string postId)
+    public async Task RemoveLike(string id, string postId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
+        var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
         customer.Likes.Remove(postId);
-        await _customerRepository.Update(userId, customer);
+        await _customerRepository.Update(id, customer);
     }
 
-    public async Task AddFavorite(string token, string gameId)
+    public async Task AddFavorite(string id, string gameId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
+        var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
         if(!customer.Favorites.Contains(gameId)) customer.Favorites.Add(gameId);
-        await _customerRepository.Update(userId, customer);
+        await _customerRepository.Update(id, customer);
     }
 
-    public async Task RemoveFavorite(string token, string gameId)
+    public async Task RemoveFavorite(string id, string gameId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
+        var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
         customer.Favorites.Remove(gameId);
-        await _customerRepository.Update(userId, customer);
+        await _customerRepository.Update(id, customer);
     }
 
-    public async Task Download(string token, string gameId)
+    public async Task Download(string id, string gameId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
+        var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
         var download = new Download
         {
-            UserId = userId,
+            UserId = id,
             GameId = gameId,
         };
-        if (!customer.Downloads.Any(d => d.UserId == userId && d.GameId == gameId))customer.Downloads.Add(download);
-        await _customerRepository.Update(userId, customer);
+        if (!customer.Downloads.Any(d => d.UserId == id && d.GameId == gameId))customer.Downloads.Add(download);
+        await _customerRepository.Update(id, customer);
     }
 
-    public async Task AddGame(string token, string gameId)
+    public async Task AddGame(string id, string gameId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var developer = (await _developerRepository.Get(userId, null)).FirstOrDefault();
+        var developer = (await _developerRepository.Get(id, null)).FirstOrDefault();
         if (developer == null) return;
 
         if(!developer.GameIds.Contains(gameId)) developer.GameIds.Add(gameId);
-        await _developerRepository.Update(userId, developer);
+        await _developerRepository.Update(id, developer);
     }
 
-    public async Task RemoveGame(string token, string gameId)
+    public async Task RemoveGame(string id, string gameId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var developer = (await _developerRepository.Get(userId, null)).FirstOrDefault();
+        var developer = (await _developerRepository.Get(id, null)).FirstOrDefault();
         if (developer == null) return;
 
         developer.GameIds.Remove(gameId);
-        await _developerRepository.Update(userId, developer);
+        await _developerRepository.Update(id, developer);
     }
 
-    public async Task AddPost(string token, string postId)
+    public async Task AddPost(string id, string postId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var developer = (await _developerRepository.Get(userId, null)).FirstOrDefault();
+        var developer = (await _developerRepository.Get(id, null)).FirstOrDefault();
         if (developer == null) return;
 
         if(!developer.PostIds.Contains(postId)) developer.PostIds.Add(postId);
-        await _developerRepository.Update(userId, developer);
+        await _developerRepository.Update(id, developer);
     }
 
-    public async Task RemovePost(string token, string postId)
+    public async Task RemovePost(string id, string postId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var developer = (await _developerRepository.Get(userId, null)).FirstOrDefault();
+        var developer = (await _developerRepository.Get(id, null)).FirstOrDefault();
         if (developer == null) return;
 
         developer.PostIds.Remove(postId);
-        await _developerRepository.Update(userId, developer);
+        await _developerRepository.Update(id, developer);
     }
 
-    public async Task AddBalance(string token, int amount)
+    public async Task AddBalance(string id, int amount)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var developer = (await _developerRepository.Get(userId, null)).FirstOrDefault();
+        var developer = (await _developerRepository.Get(id, null)).FirstOrDefault();
         if (developer == null) return;
 
         developer.Balance += amount;
-        await _developerRepository.Update(userId, developer);
+        await _developerRepository.Update(id, developer);
     }
 
-    public async Task RemoveBalance(string token, int amount)
+    public async Task RemoveBalance(string id, int amount)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var developer = (await _developerRepository.Get(userId, null)).FirstOrDefault();
+        var developer = (await _developerRepository.Get(id, null)).FirstOrDefault();
         if (developer == null) return;
 
         developer.Balance -= amount;
-        await _developerRepository.Update(userId, developer);
+        await _developerRepository.Update(id, developer);
     }
 
-    public async Task Subscribe(string token, string subscriptionId)
+    public async Task Subscribe(string id, string subscriptionId)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
+        var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
         customer.SubscriptionId = subscriptionId;
-        await _customerRepository.Update(userId, customer);
+        await _customerRepository.Update(id, customer);
     }
 
-    public async Task Unsubscribe(string token)
+    public async Task Unsubscribe(string id)
     {
-        var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
-
-        var customer = (await _customerRepository.Get(userId, null)).FirstOrDefault();
+        var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
         customer.SubscriptionId = null;
-        await _customerRepository.Update(userId, customer);
+        await _customerRepository.Update(id, customer);
     }
 }

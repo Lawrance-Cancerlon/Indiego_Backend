@@ -7,7 +7,10 @@ namespace Indiego_Backend.Repositories;
 
 public interface ISubscriptionRepository
 {
-
+    Task<List<Subscription>> Get(string? id = null, string? userId = null);
+    Task<Subscription?> Create(Subscription entity);
+    Task<Subscription?> Update(string id, Subscription entity);
+    Task<Subscription?> Delete(string id);
 }
 
 public class SubscriptionRepository(IDatabaseService database) : ISubscriptionRepository

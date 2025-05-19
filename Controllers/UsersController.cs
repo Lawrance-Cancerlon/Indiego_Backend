@@ -13,8 +13,6 @@ namespace Indiego_Backend.Controllers;
 public class UsersController(
     IUserService userService,
     IAuthenticationService authenticationService,
-    IValidator<CreateUserContract> createUserValidator,
-    IValidator<UpdateUserContract> updateUserValidator,
     IValidator<CreateAdminContract> createAdminValidator,
     IValidator<UpdateAdminContract> updateAdminValidator,
     IValidator<CreateCustomerContract> createCustomerValidator,
@@ -23,8 +21,6 @@ public class UsersController(
 {
     private readonly IUserService _userService = userService;
     private readonly IAuthenticationService _authenticationService = authenticationService;
-    private readonly IValidator<CreateUserContract> _createUserValidator = createUserValidator;
-    private readonly IValidator<UpdateUserContract> _updateUserValidator = updateUserValidator;
     private readonly IValidator<CreateAdminContract> _createAdminValidator = createAdminValidator;
     private readonly IValidator<UpdateAdminContract> _updateAdminValidator = updateAdminValidator;
     private readonly IValidator<CreateCustomerContract> _createCustomerValidator = createCustomerValidator;

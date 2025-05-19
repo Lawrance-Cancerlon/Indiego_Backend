@@ -16,8 +16,6 @@ namespace Indiego_Backend.Tests
         private UsersController _controller = null!;
         private Mock<IUserService> _mockUserService = null!;
         private Mock<IAuthenticationService> _mockAuthService = null!;
-        private Mock<IValidator<CreateUserContract>> _mockCreateUserValidator = null!;
-        private Mock<IValidator<UpdateUserContract>> _mockUpdateUserValidator = null!;
         private Mock<IValidator<CreateAdminContract>> _mockCreateAdminValidator = null!;
         private Mock<IValidator<UpdateAdminContract>> _mockUpdateAdminValidator = null!;
         private Mock<IValidator<CreateCustomerContract>> _mockCreateCustomerValidator = null!;
@@ -28,8 +26,6 @@ namespace Indiego_Backend.Tests
         {
             _mockUserService = new Mock<IUserService>();
             _mockAuthService = new Mock<IAuthenticationService>();
-            _mockCreateUserValidator = new Mock<IValidator<CreateUserContract>>();
-            _mockUpdateUserValidator = new Mock<IValidator<UpdateUserContract>>();
             _mockCreateAdminValidator = new Mock<IValidator<CreateAdminContract>>();
             _mockUpdateAdminValidator = new Mock<IValidator<UpdateAdminContract>>();
             _mockCreateCustomerValidator = new Mock<IValidator<CreateCustomerContract>>();
@@ -38,8 +34,6 @@ namespace Indiego_Backend.Tests
             _controller = new UsersController(
                 _mockUserService.Object,
                 _mockAuthService.Object,
-                _mockCreateUserValidator.Object,
-                _mockUpdateUserValidator.Object,
                 _mockCreateAdminValidator.Object,
                 _mockUpdateAdminValidator.Object,
                 _mockCreateCustomerValidator.Object,
