@@ -11,6 +11,6 @@ public class CreateSubscriptionValidator : AbstractValidator<CreateSubscriptionC
     {
         RuleFor(x => x.SubscriptionTypeId)
             .NotEmpty().WithMessage("SubscriptionTypeId is required.")
-            .Must(id => Guid.TryParse(id, out _)).WithMessage("SubscriptionTypeId must be a valid ID format.");
+            .Must(id => MongoDB.Bson.ObjectId.TryParse(id.ToString(), out _)).WithMessage("Subscription Type ID must be a valid MongoDB ObjectId.");
     }
 }

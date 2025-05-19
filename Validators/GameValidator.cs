@@ -21,7 +21,7 @@ public class CreateGameValidator : AbstractValidator<CreateGameContract>
             .NotEmpty().WithMessage("At least one genre is required.");
         RuleForEach(x => x.GenreIds)
             .NotEmpty().WithMessage("Genre ID cannot be empty.")
-            .Must(id => Guid.TryParse(id.ToString(), out _)).WithMessage("Genre ID must be a valid GUID.");
+            .Must(id => MongoDB.Bson.ObjectId.TryParse(id.ToString(), out _)).WithMessage("Genre ID must be a valid MongoDB ObjectId.");
     }
 }
 
@@ -44,7 +44,7 @@ public class UpdateGameValidator : AbstractValidator<UpdateGameContract>
                 .NotEmpty().WithMessage("At least one genre is required.");
             RuleForEach(x => x.GenreIds)
                 .NotEmpty().WithMessage("Genre ID cannot be empty.")
-                .Must(id => Guid.TryParse(id.ToString(), out _)).WithMessage("Genre ID must be a valid GUID.");
+                .Must(id => MongoDB.Bson.ObjectId.TryParse(id.ToString(), out _)).WithMessage("Genre ID must be a valid MongoDB ObjectId.");
         });
     }
 }
