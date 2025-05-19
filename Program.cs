@@ -51,7 +51,7 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("AdminWithManageGames", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageGames", "true"))
     .AddPolicy("AdminWithManagePosts", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManagePosts", "true"))
     .AddPolicy("AdminWithManageReviews", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageReviews", "true"))
-    .AddPolicy("AdminWithManageTransactions", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageTransactions", "true"));
+    .AddPolicy("AdminWithManageSubscriptions", policy => policy.RequireClaim(ClaimTypes.Role, "Admin").RequireClaim("CanManageSubscriptions", "true"));
 
 //Repositories
 builder.Services.AddSingleton<IGameRepository, GameRepository>();
@@ -64,6 +64,8 @@ builder.Services.AddSingleton<IUserRepository<User>, UserRepository<User>>();
 builder.Services.AddSingleton<IUserRepository<Admin>, UserRepository<Admin>>();
 builder.Services.AddSingleton<IUserRepository<Customer>, UserRepository<Customer>>();
 builder.Services.AddSingleton<IUserRepository<Developer>, UserRepository<Developer>>();
+
+builder.Services.AddHostedService<SubscriptionExpiryService>();
 
 //AutoMappers
 builder.Services.AddAutoMapper(typeof(GameMapper));

@@ -19,7 +19,7 @@ public class CreateAdminValidator : AbstractValidator<CreateAdminContract>
             .NotNull().WithMessage("CanManagePosts is required.");
         RuleFor(x => x.CanManageReviews)
             .NotNull().WithMessage("CanManageReviews is required.");
-        RuleFor(x => x.CanManageTransactions)
+        RuleFor(x => x.CanManageSubscriptions)
             .NotNull().WithMessage("CanManageTransactions is required.");
     }
 }
@@ -49,8 +49,8 @@ public class UpdateAdminValidator : AbstractValidator<UpdateAdminContract>
             RuleFor(x => x.CanManageReviews)
                 .NotNull().WithMessage("CanManageReviews is required.");
         });
-        When(x => x.CanManageTransactions != null, () => {
-            RuleFor(x => x.CanManageTransactions)
+        When(x => x.CanManageSubscriptions != null, () => {
+            RuleFor(x => x.CanManageSubscriptions)
                 .NotNull().WithMessage("CanManageTransactions is required.");
         });
     }

@@ -15,6 +15,6 @@ public class Admin : User
     public bool CanManagePosts { get; set; }
     [BsonElement("CanManageReviews")]
     public bool CanManageReviews { get; set; }
-    [BsonElement("CanManageTransactions")]
-    public bool CanManageTransactions { get; set; }
+    [BsonElement("CanManageSubscriptions")]
+    public bool CanManageSubscriptions { get; set; }
 }

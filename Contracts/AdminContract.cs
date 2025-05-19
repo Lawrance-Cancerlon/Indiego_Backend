@@ -15,8 +15,8 @@ public record class AdminContract : UserContract
     public bool CanManagePosts { get; init; }
     [JsonPropertyName("canManageReviews")]
     public bool CanManageReviews { get; init; }
-    [JsonPropertyName("canManageTransactions")]
-    public bool CanManageTransactions { get; init; }
+    [JsonPropertyName("canManageSubscriptions")]
+    public bool CanManageSubscriptions { get; init; }
 }
 
 public record class CreateAdminContract : CreateUserContract
@@ -31,8 +31,8 @@ public record class CreateAdminContract : CreateUserContract
     public bool CanManagePosts { get; init; }
     [JsonPropertyName("canManageReviews")]
     public bool CanManageReviews { get; init; }
-    [JsonPropertyName("canManageTransactions")]
-    public bool CanManageTransactions { get; init; }
+    [JsonPropertyName("canManageSubscriptions")]
+    public bool CanManageSubscriptions { get; init; }
 }
 
 public record class UpdateAdminContract : UpdateUserContract
@@ -47,6 +47,6 @@ public record class UpdateAdminContract : UpdateUserContract
     public bool? CanManagePosts { get; init; } = null;
     [JsonPropertyName("canManageReviews")]
     public bool? CanManageReviews { get; init; } = null;
-    [JsonPropertyName("canManageTransactions")]
-    public bool? CanManageTransactions { get; init; } = null;
+    [JsonPropertyName("canManageSubscriptions")]
+    public bool? CanManageSubscriptions { get; init; } = null;
 }
