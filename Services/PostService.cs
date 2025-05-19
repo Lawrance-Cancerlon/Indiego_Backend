@@ -9,17 +9,20 @@ namespace Indiego_Backend.Services;
 public interface IPostService
 {
     Task<List<PostContract>> Get(string? id = null, string? userId = null);
-    Task<PostContract?> Create(CreatePostContract create, string token);
+    Task<PostContract?> Create(CreatePostContract create, string token, IUserService userService);
     Task<PostContract?> Update(string id, UpdatePostContract update);
-    Task<PostContract?> Delete(string id);
+    Task<PostContract?> Delete(string id, IUserService userService);
     Task AddLike(string postId, string token);
     Task RemoveLike(string postId, string token);
 }
 
-public class PostService(IPostRepository repository, IUserService userService, IAuthenticationService authenticationService, IMapper mapper) : IPostService
+public class PostService(
+    IPostRepository repository,
+    IAuthenticationService authenticationService,
+    IMapper mapper
+) : IPostService
 {
     private readonly IPostRepository _repository = repository;
-    private readonly IUserService _userService = userService;
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IMapper _mapper = mapper;
 
@@ -28,8 +31,10 @@ public class PostService(IPostRepository repository, IUserService userService, I
         return _mapper.Map<List<PostContract>>(await _repository.Get(id, userId));
     }
 
-    public async Task<PostContract?> Create(CreatePostContract create, string token)
+    public async Task<PostContract?> Create(CreatePostContract create, string token, IUserService userService)
     {
+        IUserService _userService = userService;
+
         var userId = _authenticationService.GetId(token);
         if (userId == null) return null;
         var post = _mapper.Map<Post>(create);
@@ -48,8 +53,10 @@ public class PostService(IPostRepository repository, IUserService userService, I
         return _mapper.Map<PostContract>(updatedPost);
     }
 
-    public async Task<PostContract?> Delete(string id)
+    public async Task<PostContract?> Delete(string id, IUserService userService)
     {
+        IUserService _userService = userService;
+
         var post = await _repository.Delete(id);
         if (post == null) return null;
         await _userService.RemovePost(post.UserId, id);

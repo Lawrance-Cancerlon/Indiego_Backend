@@ -9,16 +9,14 @@ namespace Indiego_Backend.Services;
 public interface IReviewService
 {
     Task<List<ReviewContract>> Get(string? id = null, string? userId = null, string? gameId = null);
-    Task<ReviewContract?> Create(CreateReviewContract create, string token);
+    Task<ReviewContract?> Create(CreateReviewContract create, string token, IUserService userService, IGameService gameService);
     Task<ReviewContract?> Update(string id, UpdateReviewContract update);
-    Task<ReviewContract?> Delete(string id);
+    Task<ReviewContract?> Delete(string id, IUserService userService, IGameService gameService);
 }
 
-public class ReviewService(IReviewRepository repository, IUserService userService, IGameService gameService, IAuthenticationService authenticationService, IMapper mapper) : IReviewService
+public class ReviewService(IReviewRepository repository, IAuthenticationService authenticationService, IMapper mapper) : IReviewService
 {
     private readonly IReviewRepository _repository = repository;
-    private readonly IUserService _userService = userService;
-    private readonly IGameService _gameService = gameService;
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IMapper _mapper = mapper;
 
@@ -27,8 +25,11 @@ public class ReviewService(IReviewRepository repository, IUserService userServic
         return _mapper.Map<List<ReviewContract>>(await _repository.Get(id, userId, gameId));
     }
 
-    public async Task<ReviewContract?> Create(CreateReviewContract create, string token)
+    public async Task<ReviewContract?> Create(CreateReviewContract create, string token, IUserService userService, IGameService gameService)
     {
+        IUserService _userService = userService;
+        IGameService _gameService = gameService;
+
         var userId = _authenticationService.GetId(token);
         if (userId == null) return null;
         var review = _mapper.Map<Review>(create);
@@ -48,8 +49,11 @@ public class ReviewService(IReviewRepository repository, IUserService userServic
         return _mapper.Map<ReviewContract>(updatedReview);
     }
 
-    public async Task<ReviewContract?> Delete(string id)
+    public async Task<ReviewContract?> Delete(string id, IUserService userService, IGameService gameService)
     {
+        IUserService _userService = userService;
+        IGameService _gameService = gameService;
+
         var review = await _repository.Delete(id);
         if (review == null) return null;
         await _userService.RemoveReview(review.UserId, id);

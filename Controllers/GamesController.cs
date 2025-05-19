@@ -11,12 +11,18 @@ namespace Indiego_Backend.Controllers;
 [ApiController]
 public class GamesController(
     IGameService gameService,
+    IGenreService genreService,
+    IReviewService reviewService,
+    IUserService userService,
     IAuthenticationService authenticationService,
     IValidator<CreateGameContract> createGameValidator,
     IValidator<UpdateGameContract> updateGameValidator
 ) : ControllerBase
 {
     private readonly IGameService _gameService = gameService;
+    private readonly IGenreService _genreService = genreService;
+    private readonly IReviewService _reviewService = reviewService;
+    private readonly IUserService _userService = userService;
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IValidator<CreateGameContract> _createGameValidator = createGameValidator;
     private readonly IValidator<UpdateGameContract> _updateGameValidator = updateGameValidator;
@@ -42,7 +48,7 @@ public class GamesController(
         var filePath = Path.Combine(_gamePath, $"{id}.zip");
         if (!System.IO.File.Exists(filePath)) return NotFound();
         
-        await _gameService.Download(id, tokenArr[1]);
+        await _gameService.Download(id, tokenArr[1], _userService);
         var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
         return File(fileStream, "application/zip", $"{game.Name}.zip");
     }
@@ -66,7 +72,7 @@ public class GamesController(
         if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
         var tokenArr = token.Split(" ");
         if (tokenArr.Length != 2) return BadRequest();
-        var game = await _gameService.Create(create, tokenArr[1]);
+        var game = await _gameService.Create(create, tokenArr[1], _genreService, _userService);
         return Ok(game);
     }
 
@@ -146,6 +152,6 @@ public class GamesController(
 
         var filePath = Path.Combine(_gamePath, $"{id}.zip");
         if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
-        return Ok(await _gameService.Delete(id));
+        return Ok(await _gameService.Delete(id, _genreService, _reviewService, _userService));
     }
 }

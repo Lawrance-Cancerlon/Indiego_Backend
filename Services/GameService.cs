@@ -9,10 +9,10 @@ namespace Indiego_Backend.Services;
 public interface IGameService
 {
     Task<List<GameContract>> Get(string? id = null, string? developerId = null, string? genreId = null);
-    Task<GameContract?> Create(CreateGameContract create, string token);
+    Task<GameContract?> Create(CreateGameContract create, string token, IGenreService genreService, IUserService userService);
     Task<GameContract?> Update(string id, UpdateGameContract update);
-    Task<GameContract?> Delete(string id);
-    Task Download(string gameId, string token);
+    Task<GameContract?> Delete(string id, IGenreService genreService, IReviewService reviewService, IUserService userService);
+    Task Download(string gameId, string token, IUserService userService);
     Task AddReview(string gameId, string reviewId);
     Task RemoveReview(string gameId, string reviewId);
     Task RemoveGenre(string gameId, string genreId);
@@ -20,17 +20,11 @@ public interface IGameService
 
 public class GameService(
     IGameRepository repository,
-    IGenreService genreService,
-    IReviewService reviewService,
-    IUserService userService,
     IAuthenticationService authenticationService,
     IMapper mapper
 ) : IGameService
 {
     private readonly IGameRepository _repository = repository;
-    private readonly IGenreService _genreService = genreService;
-    private readonly IReviewService _reviewService = reviewService;
-    private readonly IUserService _userService = userService;
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IMapper _mapper = mapper;
 
@@ -39,8 +33,10 @@ public class GameService(
         return _mapper.Map<List<GameContract>>(await _repository.Get(id, developerId, genreId));
     }
 
-    public async Task<GameContract?> Create(CreateGameContract create, string token)
+    public async Task<GameContract?> Create(CreateGameContract create, string token, IGenreService genreService, IUserService userService)
     {
+        IGenreService _genreService = genreService;
+        IUserService _userService = userService;
         var userId = _authenticationService.GetId(token);
         if (userId == null) return null;
         var game = _mapper.Map<Game>(create);
@@ -60,19 +56,25 @@ public class GameService(
         return _mapper.Map<GameContract>(updatedGame);
     }
 
-    public async Task<GameContract?> Delete(string id)
+    public async Task<GameContract?> Delete(string id, IGenreService genreService, IReviewService reviewService, IUserService userService)
     {
+        IGenreService _genreService = genreService;
+        IReviewService _reviewService = reviewService;
+        IUserService _userService = userService;
+
         var game = await _repository.Delete(id);
         if (game == null) return null;
 
         foreach (var genre in game.GenreIds) await _genreService.RemoveGame(genre, id);
-        foreach (var review in game.ReviewIds) await _reviewService.Delete(review);
+        foreach (var review in game.ReviewIds) await _reviewService.Delete(review, _userService, gameService: this);
         await _userService.RemoveGame(game.UserId, id);
         return _mapper.Map<GameContract>(game);
     }
 
-    public async Task Download(string gameId, string token)
+    public async Task Download(string gameId, string token, IUserService userService)
     {
+        IUserService _userService = userService;
+
         var userId = _authenticationService.GetId(token);
         if (userId == null) return;
 

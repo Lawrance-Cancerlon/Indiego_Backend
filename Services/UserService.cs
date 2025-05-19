@@ -58,7 +58,9 @@ public class UserService(
     IUserRepository<Customer> customerRepository,
     IUserRepository<Developer> developerRepository,
     IGameService gameService,
+    IGenreService genreService,
     IPostService postService,
+    IReviewService reviewService,
     IAuthenticationService authenticationService,
     IMapper mapper
 ) : IUserService
@@ -68,7 +70,9 @@ public class UserService(
     private readonly IUserRepository<Customer> _customerRepository = customerRepository;
     private readonly IUserRepository<Developer> _developerRepository = developerRepository;
     private readonly IGameService _gameService = gameService;
+    private readonly IGenreService _genreService = genreService;
     private readonly IPostService _postService = postService;
+    private readonly IReviewService _reviewService = reviewService;
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IMapper _mapper = mapper;
 
@@ -177,8 +181,8 @@ public class UserService(
         if (user != null && typeof(TEntity) == typeof(Developer))
         {
             var developer = (Developer)(object)user;
-            foreach (var game in developer.GameIds) await _gameService.Delete(game);
-            foreach (var post in developer.PostIds) await _postService.Delete(post);
+            foreach (var game in developer.GameIds) await _gameService.Delete(game, _genreService, _reviewService, userService: this);
+            foreach (var post in developer.PostIds) await _postService.Delete(post, userService: this);
         }
         return _mapper.Map<TResponse>(user);
     }

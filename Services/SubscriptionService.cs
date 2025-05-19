@@ -9,14 +9,13 @@ namespace Indiego_Backend.Services;
 public interface ISubscriptionService
 {
     Task<List<SubscriptionContract>> Get(string? id = null, string? userId = null);
-    Task<SubscriptionContract?> Create(CreateSubscriptionContract create, string token);
-    Task<SubscriptionContract?> Delete(string id);
+    Task<SubscriptionContract?> Create(CreateSubscriptionContract create, string token, IUserService userService);
+    Task<SubscriptionContract?> Delete(string id, IUserService userService);
 }
 
-public class SubscriptionService(ISubscriptionRepository repository, IUserService userService, IAuthenticationService authenticationService, IMapper mapper) : ISubscriptionService
+public class SubscriptionService(ISubscriptionRepository repository, IAuthenticationService authenticationService, IMapper mapper) : ISubscriptionService
 {
     private readonly ISubscriptionRepository _repository = repository;
-    private readonly IUserService _userService = userService;
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IMapper _mapper = mapper;
 
@@ -25,8 +24,10 @@ public class SubscriptionService(ISubscriptionRepository repository, IUserServic
         return _mapper.Map<List<SubscriptionContract>>(await _repository.Get(id, userId));
     }
 
-    public async Task<SubscriptionContract?> Create(CreateSubscriptionContract create, string token)
+    public async Task<SubscriptionContract?> Create(CreateSubscriptionContract create, string token, IUserService userService)
     {
+        IUserService _userService = userService;
+
         var userId = _authenticationService.GetId(token);
         if (userId == null) return null;
         var subscription = _mapper.Map<Subscription>(create);
@@ -37,8 +38,10 @@ public class SubscriptionService(ISubscriptionRepository repository, IUserServic
         return _mapper.Map<SubscriptionContract>(subscription);
     }
 
-    public async Task<SubscriptionContract?> Delete(string id)
+    public async Task<SubscriptionContract?> Delete(string id, IUserService userService)
     {
+        IUserService _userService = userService;
+
         var subscription = await _repository.Delete(id);
         if (subscription == null) return null;
         await _userService.Unsubscribe(subscription.UserId);
