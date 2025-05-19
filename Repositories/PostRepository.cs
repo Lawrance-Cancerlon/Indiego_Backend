@@ -8,6 +8,7 @@ namespace Indiego_Backend.Repositories;
 public interface IPostRepository
 {
     Task<List<Post>> Get(string? id = null, string? userId = null);
+    Task<List<Post>> GetLikes(List<string> postIds);
     Task<Post?> Create(Post entity);
     Task<Post?> Update(string id, Post entity);
     Task<Post?> Delete(string id);
@@ -22,6 +23,12 @@ public class PostRepository(IDatabaseService database) : IPostRepository
         var filter = Builders<Post>.Filter.Empty;
         if (!string.IsNullOrEmpty(id)) filter &= Builders<Post>.Filter.Eq(x => x.Id, id);
         if (!string.IsNullOrEmpty(userId)) filter &= Builders<Post>.Filter.Eq(x => x.UserId, userId);
+        return await _collection.Find(filter).ToListAsync();
+    }
+
+    public async Task<List<Post>> GetLikes(List<string> postIds)
+    {
+        var filter = Builders<Post>.Filter.In(x => x.Id, postIds);
         return await _collection.Find(filter).ToListAsync();
     }
 

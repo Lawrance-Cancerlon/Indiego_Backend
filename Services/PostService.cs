@@ -9,11 +9,12 @@ namespace Indiego_Backend.Services;
 public interface IPostService
 {
     Task<List<PostContract>> Get(string? id = null, string? userId = null);
+    Task<List<PostContract>> GetLikes(string userId, IUserService userService);
     Task<PostContract?> Create(CreatePostContract create, string token, IUserService userService);
     Task<PostContract?> Update(string id, UpdatePostContract update);
     Task<PostContract?> Delete(string id, IUserService userService);
-    Task AddLike(string postId, string token);
-    Task RemoveLike(string postId, string token);
+    Task AddLike(string postId, string token, IUserService userService);
+    Task RemoveLike(string postId, string token, IUserService userService);
 }
 
 public class PostService(
@@ -29,6 +30,14 @@ public class PostService(
     public async Task<List<PostContract>> Get(string? id = null, string? userId = null)
     {
         return _mapper.Map<List<PostContract>>(await _repository.Get(id, userId));
+    }
+
+    public async Task<List<PostContract>> GetLikes(string userId, IUserService userService)
+    {
+        IUserService _userService = userService;
+        var user = (await _userService.Get<CustomerContract, Customer>(userId, null)).FirstOrDefault();
+        if (user == null) return [];
+        return _mapper.Map<List<PostContract>>(await _repository.GetLikes(user.Likes));
     }
 
     public async Task<PostContract?> Create(CreatePostContract create, string token, IUserService userService)
@@ -63,8 +72,10 @@ public class PostService(
         return _mapper.Map<PostContract>(post);
     }
 
-    public async Task AddLike(string postId, string token)
+    public async Task AddLike(string postId, string token, IUserService userService)
     {
+        IUserService _userService = userService;
+
         var userId = _authenticationService.GetId(token);
         if (userId == null) return;
 
@@ -72,11 +83,14 @@ public class PostService(
         if (post == null) return;
 
         if (!post.Likes.Contains(userId)) post.Likes.Add(userId);
+        await _userService.AddLike(userId, postId);
         await _repository.Update(postId, post);
     }
 
-    public async Task RemoveLike(string postId, string token)
+    public async Task RemoveLike(string postId, string token, IUserService userService)
     {
+        IUserService _userService = userService;
+
         var userId = _authenticationService.GetId(token);
         if (userId == null) return;
 
@@ -84,6 +98,7 @@ public class PostService(
         if (post == null) return;
 
         post.Likes.Remove(userId);
+        await _userService.RemoveLike(userId, postId);
         await _repository.Update(postId, post);
     }
 }

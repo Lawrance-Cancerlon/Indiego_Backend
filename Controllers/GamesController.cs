@@ -35,6 +35,17 @@ public class GamesController(
         return Ok(await _gameService.Get(id, userId, genreId));
     }
 
+    [HttpGet("favorites")]
+    [Authorize]
+    public async Task<IActionResult> GetFavorites([FromHeader(Name = "Authorization")] string token)
+    {
+        var tokenArr = token.Split(" ");
+        if (tokenArr.Length != 2) return BadRequest();
+        var userId = _authenticationService.GetId(tokenArr[1]);
+        if (userId == null) return BadRequest();
+        return Ok(await _gameService.GetFavorites(userId, _userService));
+    }
+
     [HttpGet("{id}")]
     [Authorize("Subscribed")]
     public async Task<IActionResult> Download([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
@@ -119,6 +130,40 @@ public class GamesController(
         
         await file.CopyToAsync(stream);
         return Ok(new { message = "Image uploaded successfully"});
+    }
+
+    [HttpPost("favorite/{id}")]
+    [Authorize]
+    public async Task<IActionResult> Favorite([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
+    {
+        var game = (await _gameService.Get(id)).FirstOrDefault();
+        if (game == null) return NotFound();
+
+        var tokenArr = token.Split(" ");
+        if (tokenArr.Length != 2) return BadRequest();
+
+        var userId = _authenticationService.GetId(tokenArr[1]);
+        if (userId == null) return BadRequest();
+
+        await _userService.AddFavorite(userId, id);
+        return Ok(new { message = "Game added to favorites" });
+    }
+
+    [HttpPost("unfavorite/{id}")]
+    [Authorize]
+    public async Task<IActionResult> Unfavorite([FromHeader(Name = "Authorization")] string token, [FromRoute] string id)
+    {
+        var game = (await _gameService.Get(id)).FirstOrDefault();
+        if (game == null) return NotFound();
+
+        var tokenArr = token.Split(" ");
+        if (tokenArr.Length != 2) return BadRequest();
+
+        var userId = _authenticationService.GetId(tokenArr[1]);
+        if (userId == null) return BadRequest();
+
+        await _userService.RemoveFavorite(userId, id);
+        return Ok(new { message = "Game removed from favorites" });
     }
 
     [HttpPut("{id}")]

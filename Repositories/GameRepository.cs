@@ -8,6 +8,7 @@ namespace Indiego_Backend.Repositories;
 public interface IGameRepository
 {
     Task<List<Game>> Get(string? id = null, string? userId = null, string? genreId = null);
+    Task<List<Game>> GetFavorites(List<string> gameIds);
     Task<Game?> Create(Game entity);
     Task<Game?> Update(string id, Game entity);
     Task<Game?> Delete(string id);
@@ -23,6 +24,12 @@ public class GameRepository(IDatabaseService database) : IGameRepository
         if (!string.IsNullOrEmpty(id)) filter &= Builders<Game>.Filter.Eq(x => x.Id, id);
         if (!string.IsNullOrEmpty(userId)) filter &= Builders<Game>.Filter.Eq(x => x.UserId, userId);
         if (!string.IsNullOrEmpty(genreId)) filter &= Builders<Game>.Filter.AnyEq(x => x.GenreIds, genreId);
+        return await _collection.Find(filter).ToListAsync();
+    }
+
+    public async Task<List<Game>> GetFavorites(List<string> gameIds)
+    {
+        var filter = Builders<Game>.Filter.In(x => x.Id, gameIds);
         return await _collection.Find(filter).ToListAsync();
     }
 

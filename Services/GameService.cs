@@ -8,7 +8,8 @@ namespace Indiego_Backend.Services;
 
 public interface IGameService
 {
-    Task<List<GameContract>> Get(string? id = null, string? developerId = null, string? genreId = null);
+    Task<List<GameContract>> Get(string? id = null, string? userId = null, string? genreId = null);
+    Task<List<GameContract>> GetFavorites(string userId, IUserService userService);
     Task<GameContract?> Create(CreateGameContract create, string token, IGenreService genreService, IUserService userService);
     Task<GameContract?> Update(string id, UpdateGameContract update);
     Task<GameContract?> Delete(string id, IGenreService genreService, IReviewService reviewService, IUserService userService);
@@ -28,9 +29,17 @@ public class GameService(
     private readonly IAuthenticationService _authenticationService = authenticationService;
     private readonly IMapper _mapper = mapper;
 
-    public async Task<List<GameContract>> Get(string? id = null, string? developerId = null, string? genreId = null)
+    public async Task<List<GameContract>> Get(string? id = null, string? userId = null, string? genreId = null)
     {
-        return _mapper.Map<List<GameContract>>(await _repository.Get(id, developerId, genreId));
+        return _mapper.Map<List<GameContract>>(await _repository.Get(id, userId, genreId));
+    }
+
+    public async Task<List<GameContract>> GetFavorites(string userId, IUserService userService)
+    {
+        IUserService _userService = userService;
+        var user = (await _userService.Get<CustomerContract, Customer>(userId, null)).FirstOrDefault();
+        if (user == null) return [];
+        return _mapper.Map<List<GameContract>>(await _repository.GetFavorites(user.Favorites));
     }
 
     public async Task<GameContract?> Create(CreateGameContract create, string token, IGenreService genreService, IUserService userService)
