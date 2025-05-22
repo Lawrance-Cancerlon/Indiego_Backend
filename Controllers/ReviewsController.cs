@@ -28,18 +28,18 @@ public class ReviewsController(
     [HttpGet]
     public async Task<IActionResult> Get([FromQuery] string? id, [FromQuery] string? gameId, [FromQuery] string? userId)
     {
-        return Ok(await _reviewService.Get(id, gameId, userId));
+        return Ok(await _reviewService.Get(id, userId, gameId));
     }
 
-    [HttpPost]
+    [HttpPost("{id}")]
     [Authorize("CustomerOrDeveloper")]
-    public async Task<IActionResult> Create([FromHeader(Name = "Authorization")] string token, [FromBody] CreateReviewContract create)
+    public async Task<IActionResult> Create([FromHeader(Name = "Authorization")] string token, [FromBody] CreateReviewContract create, [FromRoute] string id)
     {
         var validationResult = await _createReviewValidator.ValidateAsync(create);
         if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
         var tokenArr = token.Split(" ");
         if (tokenArr.Length != 2) return BadRequest();
-        var review = await _reviewService.Create(create, tokenArr[1], _userService, _gameService);
+        var review = await _reviewService.Create(create, tokenArr[1], id, _userService, _gameService);
         return Ok(review);
     }
 

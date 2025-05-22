@@ -9,7 +9,7 @@ namespace Indiego_Backend.Services;
 public interface IReviewService
 {
     Task<List<ReviewContract>> Get(string? id = null, string? userId = null, string? gameId = null);
-    Task<ReviewContract?> Create(CreateReviewContract create, string token, IUserService userService, IGameService gameService);
+    Task<ReviewContract?> Create(CreateReviewContract create, string token, string gameId, IUserService userService, IGameService gameService);
     Task<ReviewContract?> Update(string id, UpdateReviewContract update);
     Task<ReviewContract?> Delete(string id, IUserService userService, IGameService gameService);
 }
@@ -25,7 +25,7 @@ public class ReviewService(IReviewRepository repository, IAuthenticationService 
         return _mapper.Map<List<ReviewContract>>(await _repository.Get(id, userId, gameId));
     }
 
-    public async Task<ReviewContract?> Create(CreateReviewContract create, string token, IUserService userService, IGameService gameService)
+    public async Task<ReviewContract?> Create(CreateReviewContract create, string token, string gameId, IUserService userService, IGameService gameService)
     {
         IUserService _userService = userService;
         IGameService _gameService = gameService;
@@ -34,6 +34,7 @@ public class ReviewService(IReviewRepository repository, IAuthenticationService 
         if (userId == null) return null;
         var review = _mapper.Map<Review>(create);
         review.UserId = userId;
+        review.GameId = gameId;
         review = await _repository.Create(review);
         if (review == null) return null;
         await _userService.AddReview(userId, review.Id);
