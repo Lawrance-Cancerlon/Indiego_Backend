@@ -62,6 +62,19 @@ public class UsersController(
         return Ok(await _userService.Get<AdminContract, Admin>(id));
     }
 
+    [HttpGet("download")]
+    [Authorize("Developer")]
+    public async Task<IActionResult> GetDownload([FromHeader(Name = "Authorization")] string token)
+    {
+        var tokenArr = token.Split(" ");
+        if(tokenArr.Length != 2) return BadRequest();
+        var userId = _authenticationService.GetId(tokenArr[1]);
+        if(userId == null) return BadRequest();
+        var user = (await _userService.Get<DeveloperContract, Developer>(userId)).FirstOrDefault();
+        if (user == null) return BadRequest();
+        return Ok(await _userService.GetDownloadAnalytics(userId));
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginContract loginContract)
     {

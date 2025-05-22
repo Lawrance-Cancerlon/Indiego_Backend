@@ -50,6 +50,7 @@ public interface IUserService
     Task RemoveBalance(string id, int amount);
     Task Subscribe(string id, string subscriptionId);
     Task Unsubscribe(string id);
+    Task<List<DownloadAnalyticsContract>> GetDownloadAnalytics(string id);
 }
 
 public class UserService(
@@ -57,6 +58,7 @@ public class UserService(
     IUserRepository<Admin> adminRepository,
     IUserRepository<Customer> customerRepository,
     IUserRepository<Developer> developerRepository,
+    IGameRepository gameRepository,
     IGameService gameService,
     IGenreService genreService,
     IPostService postService,
@@ -69,6 +71,7 @@ public class UserService(
     private readonly IUserRepository<Admin> _adminRepository = adminRepository;
     private readonly IUserRepository<Customer> _customerRepository = customerRepository;
     private readonly IUserRepository<Developer> _developerRepository = developerRepository;
+    private readonly IGameRepository _gameRepository = gameRepository;
     private readonly IGameService _gameService = gameService;
     private readonly IGenreService _genreService = genreService;
     private readonly IPostService _postService = postService;
@@ -218,7 +221,7 @@ public class UserService(
         var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
-        if(!customer.ReviewIds.Contains(reviewId)) customer.ReviewIds.Add(reviewId);
+        if (!customer.ReviewIds.Contains(reviewId)) customer.ReviewIds.Add(reviewId);
         await _customerRepository.Update(id, customer);
     }
 
@@ -236,7 +239,7 @@ public class UserService(
         var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
-        if(!customer.Likes.Contains(postId)) customer.Likes.Add(postId);
+        if (!customer.Likes.Contains(postId)) customer.Likes.Add(postId);
         await _customerRepository.Update(id, customer);
     }
 
@@ -254,7 +257,7 @@ public class UserService(
         var customer = (await _customerRepository.Get(id, null)).FirstOrDefault();
         if (customer == null) return;
 
-        if(!customer.Favorites.Contains(gameId)) customer.Favorites.Add(gameId);
+        if (!customer.Favorites.Contains(gameId)) customer.Favorites.Add(gameId);
         await _customerRepository.Update(id, customer);
     }
 
@@ -277,7 +280,7 @@ public class UserService(
             UserId = id,
             GameId = gameId,
         };
-        if (!customer.Downloads.Any(d => d.UserId == id && d.GameId == gameId))customer.Downloads.Add(download);
+        if (!customer.Downloads.Any(d => d.UserId == id && d.GameId == gameId)) customer.Downloads.Add(download);
         await _customerRepository.Update(id, customer);
     }
 
@@ -286,7 +289,7 @@ public class UserService(
         var developer = (await _developerRepository.Get(id, null)).FirstOrDefault();
         if (developer == null) return;
 
-        if(!developer.GameIds.Contains(gameId)) developer.GameIds.Add(gameId);
+        if (!developer.GameIds.Contains(gameId)) developer.GameIds.Add(gameId);
         await _developerRepository.Update(id, developer);
     }
 
@@ -304,7 +307,7 @@ public class UserService(
         var developer = (await _developerRepository.Get(id, null)).FirstOrDefault();
         if (developer == null) return;
 
-        if(!developer.PostIds.Contains(postId)) developer.PostIds.Add(postId);
+        if (!developer.PostIds.Contains(postId)) developer.PostIds.Add(postId);
         await _developerRepository.Update(id, developer);
     }
 
@@ -351,5 +354,53 @@ public class UserService(
 
         customer.SubscriptionId = null;
         await _customerRepository.Update(id, customer);
+    }
+
+    public async Task<List<DownloadAnalyticsContract>> GetDownloadAnalytics(string id)
+    {
+        var developer = (await _developerRepository.Get(id, null)).FirstOrDefault();
+        if (developer == null) return [];
+
+        var gameIds = developer.GameIds;
+        if (gameIds == null || gameIds.Count == 0) return [];
+
+        var startDate = DateTime.UtcNow.Date.AddDays(-29);
+
+        var result = new Dictionary<DateTime, int>();
+        for (int i = 0; i < 30; i++)
+        {
+            result[startDate.AddDays(i)] = 0;
+        }
+
+        foreach (var gameId in gameIds)
+        {
+            var game = (await _gameRepository.Get(gameId)).FirstOrDefault();
+            if (game == null || game.Downloads == null) continue;
+
+            foreach (var download in game.Downloads)
+            {
+                if (string.IsNullOrEmpty(download.Timestamp)) continue;
+                try
+                {
+                    var downloadDate = DatetimeUtility.FromUnixTimestampString(download.Timestamp).Date;
+                    if (downloadDate >= startDate && downloadDate < startDate.AddDays(30))
+                    {
+                        // Use the Date property for grouping by day
+                        if (result.ContainsKey(downloadDate))
+                        {
+                            result[downloadDate]++;
+                        }
+                    }
+                }
+                catch { continue; }
+            }
+        }
+        return [.. result
+            .Select(kv => new DownloadAnalyticsContract
+            {
+                Date = DatetimeUtility.ToUnixTimestampString(kv.Key),
+                Downloads = kv.Value
+            })
+            .OrderBy(x => x.Date)];
     }
 }

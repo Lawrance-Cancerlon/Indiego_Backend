@@ -49,3 +49,11 @@ public record class LoginResponseContract
     [JsonPropertyName("user")]
     public UserContract User { get; init; } = null!;
 }
+
+public record class DownloadAnalyticsContract
+{
+    [JsonPropertyName("Date")]
+    public string Date { get; init; } = null!;
+    [JsonPropertyName("Downloads")]
+    public int Downloads { get; init; }
+}

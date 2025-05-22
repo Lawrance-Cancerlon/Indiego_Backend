@@ -14,6 +14,7 @@ namespace Indiego_Backend.Tests
         private Mock<IUserRepository<Admin>> _mockAdminRepository = null!;
         private Mock<IUserRepository<Customer>> _mockCustomerRepository = null!;
         private Mock<IUserRepository<Developer>> _mockDeveloperRepository = null!;
+        private Mock<IGameRepository> _mockGameRepository = null!;
         private Mock<IGameService> _mockGameService = null!;
         private Mock<IGenreService> _mockGenreService = null!;
         private Mock<IPostService> _mockPostService = null!;
@@ -29,6 +30,7 @@ namespace Indiego_Backend.Tests
             _mockAdminRepository = new Mock<IUserRepository<Admin>>();
             _mockCustomerRepository = new Mock<IUserRepository<Customer>>();
             _mockDeveloperRepository = new Mock<IUserRepository<Developer>>();
+            _mockGameRepository = new Mock<IGameRepository>();
             _mockGameService = new Mock<IGameService>();
             _mockGenreService = new Mock<IGenreService>();
             _mockPostService = new Mock<IPostService>();
@@ -41,6 +43,7 @@ namespace Indiego_Backend.Tests
                 _mockAdminRepository.Object,
                 _mockCustomerRepository.Object,
                 _mockDeveloperRepository.Object,
+                _mockGameRepository.Object,
                 _mockGameService.Object,
                 _mockGenreService.Object,
                 _mockPostService.Object,
