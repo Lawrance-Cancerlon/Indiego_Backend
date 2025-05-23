@@ -143,7 +143,6 @@ public class UserService(
         else
             repository = (IUserRepository<TEntity>)_userRepository;
         var user = _mapper.Map<TEntity>(create);
-        user.Password = BCrypt.Net.BCrypt.HashPassword(create.Password);
         await repository.Create(user);
         return _mapper.Map<TResponse>(user);
     }
