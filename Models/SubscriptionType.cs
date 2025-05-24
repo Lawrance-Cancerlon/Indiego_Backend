@@ -13,6 +13,8 @@ public class SubscriptionType
     public string Name { get; set; } = null!;
     [BsonElement("Description")]
     public string Description { get; set; } = null!;
+    [BsonElement("ShortDescription")]
+    public string ShortDescription { get; set; } = null!;
     [BsonElement("Price")]
     public int Price { get; set; }
     [BsonElement("Duration")]

@@ -11,3 +11,27 @@ public record class DeveloperContract : CustomerContract
     [JsonPropertyName("balance")]
     public int Balance { get; init; }
 }
+
+public record class CreateDeveloperContract
+{
+    [JsonPropertyName("devName")]
+    public string DevName { get; init; } = null!;
+    [JsonPropertyName("fullName")]
+    public string FullName { get; init; } = null!;
+    [JsonPropertyName("taxId")]
+    public string TaxId { get; init; } = null!;
+    [JsonPropertyName("country")]
+    public string Country { get; init; } = null!;
+}
+
+public record class UpdateDeveloperContract : UpdateCustomerContract
+{
+    [JsonPropertyName("devName")]
+    public string? DevName { get; init; }
+    [JsonPropertyName("fullName")]
+    public string? FullName { get; init; }
+    [JsonPropertyName("taxId")]
+    public string? TaxId { get; init; }
+    [JsonPropertyName("country")]
+    public string? Country { get; init; }
+}

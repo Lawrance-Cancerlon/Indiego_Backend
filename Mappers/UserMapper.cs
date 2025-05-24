@@ -33,15 +33,15 @@ public class UserMapper : Profile
         CreateMap<UpdateAdminContract, Admin>()
             .ForMember(p => p.Password, option => option.MapFrom((src, dest) =>
                 !string.IsNullOrEmpty(src.Password) ? BCrypt.Net.BCrypt.HashPassword(src.Password) : dest.Password))
-            .ForMember(p => p.CanManageAdmins, opt => 
+            .ForMember(p => p.CanManageAdmins, opt =>
                 opt.MapFrom<NullableBooleanResolver, bool?>(src => src.CanManageAdmins))
-            .ForMember(p => p.CanManageGames, opt => 
+            .ForMember(p => p.CanManageGames, opt =>
                 opt.MapFrom<NullableBooleanResolver, bool?>(src => src.CanManageGames))
-            .ForMember(p => p.CanManagePosts, opt => 
+            .ForMember(p => p.CanManagePosts, opt =>
                 opt.MapFrom<NullableBooleanResolver, bool?>(src => src.CanManagePosts))
-            .ForMember(p => p.CanManageReviews, opt => 
+            .ForMember(p => p.CanManageReviews, opt =>
                 opt.MapFrom<NullableBooleanResolver, bool?>(src => src.CanManageReviews))
-            .ForMember(p => p.CanManageSubscriptions, opt => 
+            .ForMember(p => p.CanManageSubscriptions, opt =>
                 opt.MapFrom<NullableBooleanResolver, bool?>(src => src.CanManageSubscriptions))
             .ForAllMembers(p => p.Condition((source, destination, member) => member != null));
 
@@ -58,5 +58,9 @@ public class UserMapper : Profile
         CreateMap<Developer, DeveloperContract>()
             .ForMember(p => p.Role, option => option.MapFrom(source => source.GetType().Name))
             .ForMember(p => p.IsSubscribed, option => option.MapFrom(source => source.SubscriptionId != null));
+        CreateMap<UpdateDeveloperContract, Developer>()
+            .ForMember(p => p.Password, option => option.MapFrom((src, dest) =>
+                !string.IsNullOrEmpty(src.Password) ? BCrypt.Net.BCrypt.HashPassword(src.Password) : dest.Password))
+            .ForAllMembers(p => p.Condition((source, destination, member) => member != null));
     }
 }

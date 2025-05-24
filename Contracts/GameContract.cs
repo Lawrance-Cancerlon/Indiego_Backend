@@ -19,6 +19,8 @@ public record class GameContract
     public string Description { get; init; } = null!;
     [JsonPropertyName("genreIds")]
     public List<string> GenreIds { get; init; } = null!;
+    [JsonPropertyName("link")]
+    public string? Link { get; init; } = null;
     [JsonPropertyName("rating")]
     public decimal Rating { get; init; }
     [JsonPropertyName("ratingCount")]
@@ -35,6 +37,8 @@ public record class CreateGameContract
     public string Description { get; init; } = null!;
     [JsonPropertyName("genreIds")]
     public List<string> GenreIds { get; init; } = null!;
+    [JsonPropertyName("link")]
+    public string? Link { get; init; } = null;
 }
 
 public record class UpdateGameContract
@@ -45,6 +49,8 @@ public record class UpdateGameContract
     public string? Description { get; init; } = null;
     [JsonPropertyName("genreIds")]
     public List<string>? GenreIds { get; init; } = null;
+    [JsonPropertyName("link")]
+    public string? Link { get; init; } = null;
 }
 
 public record class Download

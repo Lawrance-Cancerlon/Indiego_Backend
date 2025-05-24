@@ -34,7 +34,7 @@ public interface IUserService
     Task<TResponse?> Delete<TResponse, TEntity>(string id)
         where TResponse : UserContract
         where TEntity : User;
-    Task<DeveloperContract?> ConvertCustomerToDeveloper(string token);
+    Task<DeveloperContract?> ConvertCustomerToDeveloper(string token, CreateDeveloperContract create);
     Task AddReview(string id, string reviewId);
     Task RemoveReview(string id, string reviewId);
     Task AddLike(string id, string postId);
@@ -189,7 +189,7 @@ public class UserService(
         return _mapper.Map<TResponse>(user);
     }
 
-    public async Task<DeveloperContract?> ConvertCustomerToDeveloper(string token)
+    public async Task<DeveloperContract?> ConvertCustomerToDeveloper(string token, CreateDeveloperContract create)
     {
         var userId = _authenticationService.GetId(token);
         if (userId == null) return null;
@@ -209,6 +209,10 @@ public class UserService(
             Favorites = customer.Favorites,
             Downloads = customer.Downloads,
             BirthDate = customer.BirthDate,
+            DevName = create.DevName,
+            FullName = create.FullName,
+            TaxId = create.TaxId,
+            Country = create.Country,
         };
         await _customerRepository.Delete(userId);
         await _developerRepository.Create(developer);

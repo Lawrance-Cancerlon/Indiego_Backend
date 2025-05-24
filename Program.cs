@@ -109,6 +109,8 @@ builder.Services.AddSingleton<IValidator<CreateAdminContract>, CreateAdminValida
 builder.Services.AddSingleton<IValidator<UpdateAdminContract>, UpdateAdminValidator>();
 builder.Services.AddSingleton<IValidator<CreateCustomerContract>, CreateCustomerValidator>();
 builder.Services.AddSingleton<IValidator<UpdateCustomerContract>, UpdateCustomerValidator>();
+builder.Services.AddSingleton<IValidator<CreateDeveloperContract>, CreateDeveloperValidator>();
+builder.Services.AddSingleton<IValidator<UpdateDeveloperContract>, UpdateDeveloperValidator>();
 
 //Services
 builder.Services.AddSingleton<IGameService, GameService>();

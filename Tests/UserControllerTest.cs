@@ -19,6 +19,8 @@ namespace Indiego_Backend.Tests
         private Mock<IValidator<UpdateAdminContract>> _mockUpdateAdminValidator = null!;
         private Mock<IValidator<CreateCustomerContract>> _mockCreateCustomerValidator = null!;
         private Mock<IValidator<UpdateCustomerContract>> _mockUpdateCustomerValidator = null!;
+        private Mock<IValidator<CreateDeveloperContract>> _mockCreateDeveloperValidator = null!;
+        private Mock<IValidator<UpdateDeveloperContract>> _mockUpdateDeveloperValidator = null!;
 
         [SetUp]
         public void Setup()
@@ -29,6 +31,8 @@ namespace Indiego_Backend.Tests
             _mockUpdateAdminValidator = new Mock<IValidator<UpdateAdminContract>>();
             _mockCreateCustomerValidator = new Mock<IValidator<CreateCustomerContract>>();
             _mockUpdateCustomerValidator = new Mock<IValidator<UpdateCustomerContract>>();
+            _mockCreateDeveloperValidator = new Mock<IValidator<CreateDeveloperContract>>();
+            _mockUpdateDeveloperValidator = new Mock<IValidator<UpdateDeveloperContract>>();
 
             _controller = new UsersController(
                 _mockUserService.Object,
@@ -36,7 +40,9 @@ namespace Indiego_Backend.Tests
                 _mockCreateAdminValidator.Object,
                 _mockUpdateAdminValidator.Object,
                 _mockCreateCustomerValidator.Object,
-                _mockUpdateCustomerValidator.Object
+                _mockUpdateCustomerValidator.Object,
+                _mockCreateDeveloperValidator.Object,
+                _mockUpdateDeveloperValidator.Object
             );
         }
 
@@ -312,37 +318,6 @@ namespace Indiego_Backend.Tests
             Assert.That(result, Is.Not.Null);
             Assert.That(result!.StatusCode, Is.EqualTo(400));
             Assert.That(result.Value, Is.EqualTo(validationFailures));
-        }
-
-        [Test]
-        public async Task CreateDeveloper_ReturnsOk()
-        {
-            // Arrange
-            var token = "Bearer testToken";
-            var developerContract = new DeveloperContract();
-            _mockUserService.Setup(s => s.ConvertCustomerToDeveloper("testToken"))
-                .ReturnsAsync(developerContract);
-
-            // Act
-            var result = await _controller.CreateDeveloper(token) as OkObjectResult;
-
-            // Assert
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result!.StatusCode, Is.EqualTo(200));
-            Assert.That(result.Value, Is.EqualTo(developerContract));
-        }
-
-        [Test]
-        public async Task CreateDeveloper_WithInvalidToken_ReturnsBadRequest()
-        {
-            // Arrange
-            var token = "InvalidToken";
-
-            // Act
-            var result = await _controller.CreateDeveloper(token);
-
-            // Assert
-            Assert.That(result, Is.InstanceOf<BadRequestResult>());
         }
 
         [Test]

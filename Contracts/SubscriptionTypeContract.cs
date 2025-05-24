@@ -10,6 +10,8 @@ public record class SubscriptionTypeContract
     public string Name { get; init; } = null!;
     [JsonPropertyName("description")]
     public string Description { get; init; } = null!;
+    [JsonPropertyName("shortDescription")]
+    public string ShortDescription { get; init; } = null!;
     [JsonPropertyName("price")]
     public int Price { get; init; }
     [JsonPropertyName("duration")]
@@ -22,6 +24,8 @@ public record class CreateSubscriptionTypeContract
     public string Name { get; init; } = null!;
     [JsonPropertyName("description")]
     public string Description { get; init; } = null!;
+    [JsonPropertyName("shortDescription")]
+    public string ShortDescription { get; init; } = null!;
     [JsonPropertyName("price")]
     public int Price { get; init; }
     [JsonPropertyName("duration")]
@@ -34,6 +38,8 @@ public record class UpdateSubscriptionTypeContract
     public string? Name { get; init; } = null;
     [JsonPropertyName("description")]
     public string? Description { get; init; } = null;
+    [JsonPropertyName("shortDescription")]
+    public string? ShortDescription { get; init; } = null;
     [JsonPropertyName("price")]
     public int? Price { get; init; } = null;
     [JsonPropertyName("duration")]

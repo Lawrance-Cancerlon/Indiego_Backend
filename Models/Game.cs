@@ -21,6 +21,8 @@ public class Game
     public string Name { get; set; } = null!;
     [BsonElement("Description")]
     public string Description { get; set; } = null!;
+    [BsonElement("Link")]
+    public string? Link { get; set; } = null;
     [BsonElement("GenreIds")]
     public List<string> GenreIds { get; set; } = null!;
     [BsonElement("CreatedAt")]

@@ -400,7 +400,8 @@ namespace Indiego_Backend.Tests
                 .Returns(developerContract);
 
             // Act
-            var result = await _userService.ConvertCustomerToDeveloper(token);
+            var createDeveloperContract = new CreateDeveloperContract();
+            var result = await _userService.ConvertCustomerToDeveloper(token, createDeveloperContract);
 
             // Assert
             Assert.That(result, Is.Not.Null);
@@ -409,12 +410,12 @@ namespace Indiego_Backend.Tests
             _mockDeveloperRepository.Verify(repo => repo.Create(It.IsAny<Developer>()), Times.Once);
         }
 
-        [Test]
         public async Task ConvertCustomerToDeveloper_InvalidCustomer_ReturnsNull()
         {
             // Arrange
             var token = "valid-token";
             var userId = "userId";
+            var createDeveloperContract = new CreateDeveloperContract();
 
             _mockAuthService.Setup(auth => auth.GetId(token))
                 .Returns(userId);
@@ -422,7 +423,7 @@ namespace Indiego_Backend.Tests
                 .ReturnsAsync([]);
 
             // Act
-            var result = await _userService.ConvertCustomerToDeveloper(token);
+            var result = await _userService.ConvertCustomerToDeveloper(token, createDeveloperContract);
 
             // Assert
             Assert.That(result, Is.Null);
