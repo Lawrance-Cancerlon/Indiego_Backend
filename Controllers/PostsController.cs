@@ -42,6 +42,17 @@ public class PostsController(
         return Ok(await _postService.GetLikes(userId, _userService));
     }
 
+    [HttpGet("image/{id}")]
+    public async Task<IActionResult> GetImage([FromRoute] string id)
+    {
+        var post = (await _postService.Get(id)).FirstOrDefault();
+        if (post == null) return NotFound();
+        var filePath = Path.Combine(_imagePath, $"{id}.png");
+        if (!System.IO.File.Exists(filePath)) return NotFound();
+        var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        return File(fileStream, "image/png");
+    }
+
     [HttpPost]
     [Authorize("Developer")]
     public async Task<IActionResult> Create([FromHeader(Name = "Authorization")] string token, [FromBody] CreatePostContract create)

@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using FluentValidation;
 using Indiego_Backend.Contracts;
 using Indiego_Backend.Models;
@@ -73,10 +74,28 @@ public class GamesController(
     {
         var game = (await _gameService.Get(id)).FirstOrDefault();
         if (game == null) return NotFound();
-        var filePath = Path.Combine(_imagePath, $"{id}.png");
-        if (!System.IO.File.Exists(filePath)) return NotFound();
-        var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
-        return File(fileStream, "image/png", $"{game.Id}.png");
+        
+        var folderPath = Path.Combine(_imagePath, id);
+        if (!Directory.Exists(folderPath)) return NotFound();
+        
+        var files = Directory.GetFiles(folderPath, $"{id}_*.png");
+        if (files.Length == 0) return NotFound();
+        
+        using var memoryStream = new MemoryStream();
+        using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+        {
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileName(file);
+                var entry = archive.CreateEntry(fileName);
+                
+                using var entryStream = entry.Open();
+                using var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read);
+                await fileStream.CopyToAsync(entryStream);
+            }
+        }
+        memoryStream.Position = 0;
+        return File(memoryStream.ToArray(), "application/zip", $"{game.Id}_images.zip");
     }
 
     [HttpPost]
@@ -117,7 +136,7 @@ public class GamesController(
     [HttpPost("image/upload/{id}")]
     [Authorize("Developer")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadImage([FromHeader(Name = "Authorization")] string token, [FromRoute] string id, IFormFile file)
+    public async Task<IActionResult> UploadImage([FromHeader(Name = "Authorization")] string token, [FromRoute] string id, List<IFormFile> files)
     {
         var game = (await _gameService.Get(id)).FirstOrDefault();
         if (game == null) return NotFound();
@@ -126,13 +145,19 @@ public class GamesController(
         if (tokenArr.Length != 2) return BadRequest();
         if (_authenticationService.GetId(tokenArr[1]) != game.UserId) return Forbid();
         
-        if (file == null || file.Length == 0 || (!file.FileName.EndsWith(".png") && !file.FileName.EndsWith(".jpg") && !file.FileName.EndsWith(".jpeg"))) return BadRequest("File is not valid");
-        
-        if (!Directory.Exists(_imagePath)) Directory.CreateDirectory(_imagePath);
-        var filePath = Path.Combine(_imagePath, $"{id}.png");
-        using var stream = new FileStream(filePath, FileMode.Create);
-        
-        await file.CopyToAsync(stream);
+        if (files == null || files.Count == 0) return BadRequest("No file provided");
+        var path = Path.Combine(_imagePath, $"{id}");
+        if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+
+        int counter = 0;
+        foreach (var file in files)
+        {
+            if (file == null || file.Length == 0 || (!file.FileName.EndsWith(".png") && !file.FileName.EndsWith(".jpg") && !file.FileName.EndsWith(".jpeg"))) return BadRequest("File is not valid");
+            var filePath = Path.Combine(path, $"{id}_{counter}.png");
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await file.CopyToAsync(stream);
+            counter++;
+        }
         return Ok(new { message = "Image uploaded successfully"});
     }
 
