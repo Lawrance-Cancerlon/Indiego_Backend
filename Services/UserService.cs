@@ -16,6 +16,7 @@ public interface IUserService
         where TEntity : User;
 
     Task<LoginResponseContract?> Login(LoginContract loginContract);
+    Task<string?> RefreshToken(string token);
 
     Task<List<TResponse>> Get<TResponse, TEntity>(string? id = null, string? email = null)
         where TResponse : UserContract
@@ -110,6 +111,17 @@ public class UserService(
             Token = _authenticationService.GenerateToken(user),
             User = _mapper.Map<UserContract>(user)
         };
+    }
+
+    public async Task<string?> RefreshToken(string token)
+    {
+        var userId = _authenticationService.GetId(token);
+        if (userId == null) return null;
+
+        var user = (await _userRepository.Get(userId, null)).FirstOrDefault();
+        if (user == null) return null;
+
+        return _authenticationService.GenerateToken(user);
     }
 
     public async Task<List<TResponse>> Get<TResponse, TEntity>(string? id = null, string? email = null)

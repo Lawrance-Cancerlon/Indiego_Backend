@@ -38,13 +38,13 @@ public class UsersController(
         if(tokenArr.Length != 2) return BadRequest();
         var role = _authenticationService.GetRole(tokenArr[1]);
         if (role == "Admin") 
-            return Ok(await _userService.GetLoggedInUser<AdminContract, Admin>(tokenArr[1]));
+            return Ok(new { token = await _userService.RefreshToken(tokenArr[1]), user = await _userService.GetLoggedInUser<AdminContract, Admin>(tokenArr[1]) });
         else if (role == "Developer")
-            return Ok(await _userService.GetLoggedInUser<DeveloperContract, Developer>(tokenArr[1]));
+            return Ok(new { token = await _userService.RefreshToken(tokenArr[1]), user = await _userService.GetLoggedInUser<DeveloperContract, Developer>(tokenArr[1]) });
         else if (role == "Customer")
-            return Ok(await _userService.GetLoggedInUser<CustomerContract, Customer>(tokenArr[1]));
+            return Ok(new { token = await _userService.RefreshToken(tokenArr[1]), user = await _userService.GetLoggedInUser<CustomerContract, Customer>(tokenArr[1]) });
         else
-            return Ok(await _userService.GetLoggedInUser<UserContract, User>(tokenArr[1]));
+            return Ok(new { token = await _userService.RefreshToken(tokenArr[1]), user = await _userService.GetLoggedInUser<UserContract, User>(tokenArr[1]) });
     }
 
     [HttpGet]
