@@ -226,8 +226,8 @@ public class GamesController(
 
         var filePath = Path.Combine(_gamePath, $"{id}.zip");
         if (System.IO.File.Exists(filePath)) System.IO.File.Delete(filePath);
-        var imagePath = Path.Combine(_imagePath, $"{id}.png");
-        if (System.IO.File.Exists(imagePath)) System.IO.File.Delete(imagePath);
+        var folderPath = Path.Combine(_imagePath, $"{id}");
+        if (Directory.Exists(folderPath)) Directory.Delete(folderPath, true);
         return Ok(await _gameService.Delete(id, _genreService, _reviewService, _userService));
     }
 }
