@@ -64,7 +64,6 @@ public class GamesController(
         if (!System.IO.File.Exists(filePath)) return NotFound();
         
         await _subscriptionService.AddDownload(tokenArr[1], id, _userService, _gameService);
-        await _gameService.Download(id, tokenArr[1], _userService);
         var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
         return File(fileStream, "application/zip", $"{game.Name}.zip");
     }

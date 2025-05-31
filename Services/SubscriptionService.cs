@@ -60,9 +60,11 @@ public class SubscriptionService(ISubscriptionRepository repository, IAuthentica
         var user = (await _userService.Get<CustomerContract, Customer>(userId)).FirstOrDefault();
         if (user == null) return;
 
+        var flag = await _gameService.Download(gameId, token, _userService);
+
         var subscription = (await _repository.Get(user.SubscriptionId)).FirstOrDefault();
         if (subscription == null) return;
-        if (subscription.Download < 10)
+        if (subscription.Download < 10 && flag)
         {
             var game = (await _gameService.Get(gameId)).FirstOrDefault();
             if (game == null) return;

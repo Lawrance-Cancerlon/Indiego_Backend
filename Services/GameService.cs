@@ -13,7 +13,7 @@ public interface IGameService
     Task<GameContract?> Create(CreateGameContract create, string token, IGenreService genreService, IUserService userService);
     Task<GameContract?> Update(string id, UpdateGameContract update);
     Task<GameContract?> Delete(string id, IGenreService genreService, IReviewService reviewService, IUserService userService);
-    Task Download(string gameId, string token, IUserService userService);
+    Task<bool> Download(string gameId, string token, IUserService userService);
     Task AddReview(string gameId, string reviewId);
     Task RemoveReview(string gameId, string reviewId);
     Task RemoveGenre(string gameId, string genreId);
@@ -80,24 +80,30 @@ public class GameService(
         return _mapper.Map<GameContract>(game);
     }
 
-    public async Task Download(string gameId, string token, IUserService userService)
+    public async Task<bool> Download(string gameId, string token, IUserService userService)
     {
+        var flag = false;
         IUserService _userService = userService;
 
         var userId = _authenticationService.GetId(token);
-        if (userId == null) return;
+        if (userId == null) return flag;
 
         var game = (await _repository.Get(gameId)).FirstOrDefault();
-        if (game == null) return;
+        if (game == null) return flag;
 
         var download = new Download
         {
             UserId = userId,
             GameId = game.Id
         };
-        if (!game.Downloads.Any(d => d.UserId == userId && d.GameId == game.Id)) game.Downloads.Add(download);
+        if (!game.Downloads.Any(d => d.UserId == userId && d.GameId == game.Id))
+        {
+            game.Downloads.Add(download);
+            flag = true;
+        }
         await _userService.Download(userId, game.Id);
         await _repository.Update(gameId, game);
+        return flag;
     }
 
     public async Task AddReview(string gameId, string reviewId)
