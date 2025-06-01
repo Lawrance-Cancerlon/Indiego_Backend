@@ -400,10 +400,9 @@ public class UserService(
                     var downloadDate = DatetimeUtility.FromUnixTimestampString(download.Timestamp).Date;
                     if (downloadDate >= startDate && downloadDate < startDate.AddDays(30))
                     {
-                        // Use the Date property for grouping by day
-                        if (result.ContainsKey(downloadDate))
+                        if (result.TryGetValue(downloadDate, out int value))
                         {
-                            result[downloadDate]++;
+                            result[downloadDate] = ++value;
                         }
                     }
                 }
